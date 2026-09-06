@@ -25,7 +25,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
         }
 
@@ -168,10 +168,10 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 6px;
-            text-align: center;
         }
 
         .weekday {
+            text-align: center;
             font-weight: bold;
             font-size: 0.85rem;
             color: #7f8c8d;
@@ -182,28 +182,45 @@
             background: #fafbfc;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            min-height: 85px;
-            padding: 4px;
+            min-height: 110px;
+            padding: 6px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+        }
+
+        .day-header-row {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
+            width: 100%;
+            margin-bottom: 4px;
         }
 
         .day-number {
             font-size: 0.8rem;
             color: #555;
+            font-weight: bold;
+        }
+
+        .day-memo-input {
+            font-size: 0.7rem;
             width: 100%;
-            text-align: left;
-            padding-left: 2px;
+            height: 32px;
+            resize: none;
+            padding: 2px 4px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            background: #fff;
+            margin-top: 4px;
         }
 
         .trackers-container {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
             width: 100%;
-            margin-bottom: 4px;
         }
 
         .tracker-row {
@@ -211,18 +228,17 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.75rem;
-            padding: 0 4px;
             color: #666;
         }
 
         .habit-btn {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 4px;
             border: 1px solid var(--border-color);
             background: white;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -260,7 +276,7 @@
             <input type="number" id="current-page" placeholder="現在ページ" style="width: 100px;">
             <span>/ 目標</span>
             <input type="number" id="target-page" placeholder="目標ページ" style="width: 100px;" value="24">
-            <button onclick="saveManuscript()">進捗を保存</button>
+            <button onclick="updateManuscript()">進捗を保存</button>
         </div>
     </div>
 
@@ -268,7 +284,7 @@
     <div class="card">
         <h3 style="margin-top:0; margin-bottom:15px;">📊 工程別進捗管理</h3>
         <div id="process-list-container">
-            <!-- JavaScriptで動的生成 -->
+            <!-- JavaScriptで動적生成 -->
         </div>
 
         <div class="deadline-info" style="margin-top: 15px;">
@@ -280,7 +296,7 @@
             <button class="gcal-btn" onclick="openGCalDeadline()" style="margin-left: auto;">Googleカレンダーに締め切り登録</button>
         </div>
 
-        <textarea id="manuscript-memo" class="memo-box" placeholder="制作メモ（例：ネーム締め切り、〇ページ目の作画中など）" oninput="saveManuscriptMeta()"></textarea>
+        <textarea id="manuscript-memo" class="memo-box" placeholder="全体制作メモ（例：ネーム締め切り、〇ページ目の作画中など）" oninput="saveManuscriptMeta()"></textarea>
     </div>
 
     <!-- 運動習慣カード -->
@@ -291,7 +307,7 @@
         </div>
     </div>
 
-    <!-- カレンダー＆連動トラッカーカード -->
+    <!-- カレンダー＆連動トラッカー＆メモカード -->
     <div class="card">
         <div class="calendar-header">
             <button onclick="changeMonth(-1)">&lt; 前月</button>
@@ -329,7 +345,8 @@
         manuscript_deadline: '',
         manuscript_memo: '',
         processes: {},
-        trackers: {}
+        trackers: {},
+        day_memos: {}
     };
 
     // 起動時にFirestoreからデータを取得
@@ -341,6 +358,7 @@
                 appData = docSnap.data();
                 if (!appData.processes) appData.processes = {};
                 if (!appData.trackers) appData.trackers = {};
+                if (!appData.day_memos) appData.day_memos = {};
             }
         } catch (e) {
             console.error("データ読み込みエラー:", e);
@@ -414,7 +432,6 @@
             `;
             container.appendChild(row);
 
-            // イベントリスナーの付与
             row.querySelector(`#proc-btn-${index}`).onclick = async () => {
                 const curr = parseInt(document.getElementById(`proc-curr-input-${index}`).value) || 0;
                 const targ = parseInt(document.getElementById(`proc-targ-input-${index}`).value) || 1;
@@ -540,11 +557,31 @@
             const cell = document.createElement('div');
             cell.className = 'day-cell';
 
+            // 日付とメモ入力エリアの親行
+            const headerRow = document.createElement('div');
+            headerRow.className = 'day-header-row';
+
             const num = document.createElement('span');
             num.className = 'day-number';
             num.textContent = day;
-            cell.appendChild(num);
+            headerRow.appendChild(num);
 
+            cell.appendChild(headerRow);
+
+            // 日付ごとのメモ入力欄
+            const memoKey = `memo_${currentYear}_${currentMonth + 1}_${day}`;
+            const memoInput = document.createElement('textarea');
+            memoInput.className = 'day-memo-input';
+            memoInput.placeholder = '今日のメモ...';
+            memoInput.value = appData.day_memos[memoKey] || '';
+            
+            memoInput.oninput = async () => {
+                appData.day_memos[memoKey] = memoInput.value;
+                await saveDataToCloud();
+            };
+            cell.appendChild(memoInput);
+
+            // トラッカー（運動・制作）
             const container = document.createElement('div');
             container.className = 'trackers-container';
 
