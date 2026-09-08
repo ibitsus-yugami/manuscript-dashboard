@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Progress & Habit Tracker (Cloud Sync)</title>
     <style>
-        /* ==========================================
-           【CSSスタイル定義エリア】
-           全体の配色、レイアウト、各UIパーツの見た目を指定
-           ========================================== */
         :root {
             --bg-color: #f4f6f9;
             --card-bg: #ffffff;
@@ -29,7 +25,7 @@
         }
 
         .container {
-            max-width: 950px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
@@ -39,7 +35,6 @@
             color: #2c3e50;
         }
 
-        /* タブメニューのスタイル */
         .tab-menu {
             display: flex;
             gap: 10px;
@@ -184,15 +179,11 @@
             flex-wrap: wrap;
         }
 
-        .deadline-info input[type="date"] {
-            background: white;
-        }
-
         .memo-box {
             width: 100%;
             margin-top: 5px;
             resize: vertical;
-            height: 70px;
+            height: 120px;
             box-sizing: border-box;
         }
 
@@ -228,7 +219,6 @@
             justify-content: space-between;
             cursor: pointer;
             transition: background 0.2s;
-            position: relative;
         }
 
         .day-cell:hover {
@@ -290,7 +280,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
             padding: 0;
         }
 
@@ -312,85 +301,166 @@
             border: 1px solid var(--primary);
         }
 
-        /* ネタ帳・インプットカード用スタイル */
-        .item-card {
+        /* 2カラムマスター・ディテールレイアウト（ネタ帳・インプット用） */
+        .manager-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .manager-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sidebar-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 500px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding-right: 10px;
+        }
+
+        .list-item-btn {
+            text-align: left;
+            padding: 10px 12px;
             background: #f8f9fa;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 12px;
-            position: relative;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-color);
+            transition: all 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .item-card textarea {
-            width: 100%;
-            height: 60px;
-            margin-top: 5px;
-            box-sizing: border-box;
+
+        .list-item-btn:hover {
+            background: #e9ecef;
         }
-        .item-card input[type="text"] {
-            width: 100%;
-            margin-top: 5px;
-            box-sizing: border-box;
+
+        .list-item-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
-        .delete-btn {
+
+        .detail-pane {
+            background: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .delete-btn-danger {
             background-color: var(--danger);
             color: white;
             border: none;
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.75rem;
-            float: right;
+            font-size: 0.8rem;
         }
+
+        /* 画像プレビュー＆クローズアップ関連 */
         .img-preview-container {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-top: 8px;
+            margin-top: 10px;
         }
+
         .img-thumb-wrap {
             position: relative;
             display: inline-block;
         }
+
         .uploaded-img-preview {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.2s;
         }
+
+        .uploaded-img-preview:hover {
+            transform: scale(1.03);
+        }
+
         .img-delete-btn {
             position: absolute;
-            top: -4px;
-            right: -4px;
+            top: -6px;
+            right: -6px;
             background: var(--danger);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.6rem;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+
         .upload-note {
             font-size: 0.75rem;
             color: #888;
-            margin-top: 2px;
+            margin-top: 4px;
+        }
+
+        .file-name-display {
+            font-size: 0.8rem;
+            color: #2980b9;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        /* モーダル（画像拡大表示用） */
+        #image-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modal-img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        #image-modal span {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+    <h1>制作 ＆ 運動 管理ダッシュボード（クラウド同期）</h1>
 
-    <!-- ==========================================
-       【タブメニュー表示エリア】
-       各画面を切り替えるためのボタン群
-       ========================================== -->
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・習慣</button>
         <button class="tab-btn" onclick="switchTab('manuscript-tab', this)">✍️ 原稿進捗</button>
@@ -398,10 +468,7 @@
         <button class="tab-btn" onclick="switchTab('inputs-tab', this)">🔗 インプット</button>
     </div>
 
-    <!-- ==========================================
-       【タブ1: カレンダー・習慣エリア】
-       運動・制作の達成状況、月別カレンダー、日付別メモ（れみぱん/ゆくん用・複数画像対応）
-       ========================================== -->
+    <!-- タブ1: カレンダー・習慣エリア -->
     <div id="calendar-tab" class="tab-content active">
         <div class="card">
             <div class="section-header">
@@ -415,45 +482,44 @@
                 <h3 id="calendar-title" style="margin:0;">2026年 9月</h3>
                 <button onclick="changeMonth(1)">次月 &gt;</button>
             </div>
-            <div class="calendar-grid" id="calendar-grid">
-                <!-- JavaScriptで動的生成 -->
-            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
         </div>
 
-        <!-- 選択した日付の詳細メモビュー（れみぱん猫🐱・ゆくん犬🐶用・複数画像対応） -->
+        <!-- 選択した日付の詳細メモビュー -->
         <div class="card day-detail-card" id="day-detail-section">
-            <h3 id="selected-date-title" style="margin-top:0; margin-bottom:10px; font-size: 1rem; color: var(--primary);">日付を選択してください</h3>
+            <h3 id="selected-date-title" style="margin-top:0; margin-bottom:15px; font-size: 1.1rem; color: var(--primary);">日付を選択してください</h3>
             
-            <!-- れみぱん用メモ -->
-            <div style="margin-bottom: 15px;">
-                <label style="font-weight: bold; font-size: 0.85rem; color: #2c3e50;">🐱 れみぱん用メモ:</label>
-                <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
-                <div style="margin-top: 5px;">
-                    <label style="font-size: 0.8rem; font-weight: bold;">画像添付 (複数可):</label>
-                    <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
-                    <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
-                    <div id="remipan-img-preview" class="img-preview-container"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- れみぱん用メモ -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50; display: block; margin-bottom: 5px;">🐱 れみぱん用メモ:</label>
+                    <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 0.8rem; font-weight: bold;">画像添付 (複数可):</label>
+                        <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
+                        <div id="remipan-file-name" class="file-name-display">選択されていません</div>
+                        <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                        <div id="remipan-img-preview" class="img-preview-container"></div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- ゆくん用メモ -->
-            <div>
-                <label style="font-weight: bold; font-size: 0.85rem; color: #2c3e50;">🐶 ゆくん用メモ:</label>
-                <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
-                <div style="margin-top: 5px;">
-                    <label style="font-size: 0.8rem; font-weight: bold;">画像添付 (複数可):</label>
-                    <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
-                    <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
-                    <div id="yukun-img-preview" class="img-preview-container"></div>
+                <!-- ゆくん用メモ -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50; display: block; margin-bottom: 5px;">🐶 ゆくん用メモ:</label>
+                    <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 0.8rem; font-weight: bold;">画像添付 (複数可):</label>
+                        <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
+                        <div id="yukun-file-name" class="file-name-display">選択されていません</div>
+                        <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                        <div id="yukun-img-preview" class="img-preview-container"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ==========================================
-       【タブ2: 原稿進捗エリア】
-       締め切り・全体進捗・個別工程別の進捗管理
-       ========================================== -->
+    <!-- タブ2: 原稿進捗エリア -->
     <div id="manuscript-tab" class="tab-content">
         <div class="card">
             <h3 style="margin-top:0; margin-bottom:15px;">⏳ 締め切り・全体メモ</h3>
@@ -474,7 +540,6 @@
                 <span id="manuscript-text">0 / 24 ページ (0%)</span>
             </div>
             <progress id="manuscript-bar" value="0" max="100" style="margin-top: 10px;"></progress>
-            
             <div class="inputs">
                 <input type="number" id="current-page" placeholder="現在ページ" style="width: 100px;">
                 <span>/ 目標</span>
@@ -485,51 +550,53 @@
 
         <div class="card">
             <h3 style="margin-top:0; margin-bottom:15px;">📊 工程別進捗管理</h3>
-            <div id="process-list-container">
-                <!-- JavaScriptで動的生成 -->
-            </div>
+            <div id="process-list-container"></div>
         </div>
     </div>
 
-    <!-- ==========================================
-       【タブ3: ネタ帳エリア】
-       漫画などのネタを複数画像付きで自由に追加・記述・削除できるカード群
-       ========================================== -->
+    <!-- タブ3: ネタ帳エリア -->
     <div id="ideas-tab" class="tab-content">
         <div class="card">
             <div class="section-header">
                 <h3 style="margin:0;">💡 ネタ帳</h3>
-                <button onclick="addIdeaItem()">＋ ネタを追加</button>
+                <button onclick="addIdeaItem()">＋ 新規ネタを追加</button>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">漫画のアイディア、セリフ、設定などを複数画像と一緒に書き溜めていけます。</p>
-            <div id="ideas-container">
-                <!-- JavaScriptで動的生成 -->
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると、1ページで詳細な内容の確認・修正が行えます。</p>
+            
+            <div class="manager-layout">
+                <div class="sidebar-list" id="ideas-sidebar"></div>
+                <div class="detail-pane" id="ideas-detail">
+                    <p style="color: #888; text-align: center; margin-top: 100px;">左側からネタを選択するか、新しいネタを追加してください。</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ==========================================
-       【タブ4: インプットエリア】
-       外部からの情報や参考資料を複数画像アップロード付きで管理
-       ========================================== -->
+    <!-- タブ4: インプットエリア -->
     <div id="inputs-tab" class="tab-content">
         <div class="card">
             <div class="section-header">
                 <h3 style="margin:0;">🔗 インプット情報</h3>
-                <button onclick="addInputItem()">＋ インプットを追加</button>
+                <button onclick="addInputItem()">＋ 新規インプットを追加</button>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">外部の参考リンクや参考画像を複数アップロードして管理できます。</p>
-            <div id="inputs-container">
-                <!-- JavaScriptで動的生成 -->
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると、リンクや詳細内容、画像をまとめて確認・修正できます。</p>
+            
+            <div class="manager-layout">
+                <div class="sidebar-list" id="inputs-sidebar"></div>
+                <div class="detail-pane" id="inputs-detail">
+                    <p style="color: #888; text-align: center; margin-top: 100px;">左側からインプット項目を選択するか、新しく追加してください。</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ==========================================
-   【JavaScriptロジックエリア】
-   Firebase連携、UI描画、タブ切り替え、データ保存の制御
-   ========================================== -->
+<!-- 画像クローズアップ用モーダル -->
+<div id="image-modal" onclick="closeImageModal()">
+    <span onclick="closeImageModal()">&times;</span>
+    <img id="modal-img">
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -568,6 +635,9 @@
     let selectedMonth = new Date().getMonth() + 1;
     let selectedDay = new Date().getDate();
 
+    let activeIdeaId = null;
+    let activeInputId = null;
+
     window.switchTab = function(tabId, btnElement) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -590,6 +660,13 @@
                 if (!appData.day_images_yukun) appData.day_images_yukun = {};
                 if (!appData.ideas) appData.ideas = [];
                 if (!appData.inputs) appData.inputs = [];
+
+                if (appData.ideas.length > 0 && activeIdeaId === null) {
+                    activeIdeaId = appData.ideas[0].id;
+                }
+                if (appData.inputs.length > 0 && activeInputId === null) {
+                    activeInputId = appData.inputs[0].id;
+                }
             }
         } catch (e) {
             console.error("データ読み込みエラー:", e);
@@ -616,8 +693,8 @@
         updateCountdown(appData.manuscript_deadline ?? '');
         renderCalendar();
         updateSelectedDayView();
-        renderIdeas();
-        renderInputs();
+        renderIdeasManager();
+        renderInputsManager();
     }
 
     window.updateManuscript = async function() {
@@ -716,15 +793,9 @@
         const current = document.getElementById('current-page').value;
         const target = document.getElementById('target-page').value;
 
-        let eventTitle = "締め切り";
-        let eventDetails = memo;
-
-        if (memo) {
-            eventTitle = memo.split('\n')[0];
-        }
-
+        let eventTitle = memo ? memo.split('\n')[0] : "締め切り";
         const text = encodeURIComponent(eventTitle);
-        const details = encodeURIComponent(`【現在の進捗】${current}/${target}ページ\n\n【詳細メモ】\n${eventDetails}`);
+        const details = encodeURIComponent(`【現在の進捗】${current}/${target}ページ\n\n【詳細メモ】\n${memo}`);
         let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&details=${details}`;
         
         if (deadline) {
@@ -737,13 +808,11 @@
             alert('締め切り日が設定されていません。');
             return;
         }
-
         window.open(url, '_blank');
     }
 
-    let todayDate = new Date();
-    let currentYear = todayDate.getFullYear();
-    let currentMonth = todayDate.getMonth();
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
 
     window.changeMonth = function(direction) {
         currentMonth += direction;
@@ -829,13 +898,11 @@
             const exKey = `exercise_${currentYear}_${currentMonth + 1}_${day}`;
             const exStatus = appData.trackers[exKey] || 'none';
             if (exStatus === 'maru') exerciseCount++;
-            const exRow = createTrackerRow('運', exKey, exStatus, currentYear, currentMonth + 1, day, '運動');
-            container.appendChild(exRow);
+            container.appendChild(createTrackerRow('運', exKey, exStatus, currentYear, currentMonth + 1, day, '運動'));
 
             const workKey = `work_${currentYear}_${currentMonth + 1}_${day}`;
             const workStatus = appData.trackers[workKey] || 'none';
-            const workRow = createTrackerRow('制', workKey, workStatus, currentYear, currentMonth + 1, day, '制作');
-            container.appendChild(workRow);
+            container.appendChild(createTrackerRow('制', workKey, workStatus, currentYear, currentMonth + 1, day, '制作'));
 
             cell.appendChild(container);
             grid.appendChild(cell);
@@ -845,15 +912,14 @@
     }
 
     function updateSelectedDayView() {
-        const titleEl = document.getElementById('selected-date-title');
-        const memoInputRemipan = document.getElementById('selected-day-memo-remipan');
-        const memoInputYukun = document.getElementById('selected-day-memo-yukun');
-        
-        titleEl.textContent = `📝 ${selectedYear}年${selectedMonth}月${selectedDay}日のメモ`;
+        document.getElementById('selected-date-title').textContent = `📝 ${selectedYear}年${selectedMonth}月${selectedDay}日のメモ`;
         
         const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        memoInputRemipan.value = appData.day_memos_remipan[memoKey] || '';
-        memoInputYukun.value = appData.day_memos_yukun[memoKey] || '';
+        document.getElementById('selected-day-memo-remipan').value = appData.day_memos_remipan[memoKey] || '';
+        document.getElementById('selected-day-memo-yukun').value = appData.day_memos_yukun[memoKey] || '';
+
+        document.getElementById('remipan-file-name').textContent = '選択されていません';
+        document.getElementById('yukun-file-name').textContent = '選択されていません';
 
         renderDayImages('remipan');
         renderDayImages('yukun');
@@ -870,11 +936,13 @@
         const files = inputElement.files;
         if (!files || files.length === 0) return;
 
+        // 選択されたファイル名を表示
+        const fileNames = Array.from(files).map(f => f.name).join(', ');
+        document.getElementById(`${type}-file-name`).textContent = `選択中: ${fileNames}`;
+
         const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
         const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
-        if (!targetObj[imgKey]) {
-            targetObj[imgKey] = [];
-        }
+        if (!targetObj[imgKey]) targetObj[imgKey] = [];
 
         let processed = 0;
         Array.from(files).forEach(file => {
@@ -889,7 +957,7 @@
             };
             reader.readAsDataURL(file);
         });
-        inputElement.value = ''; // リセット
+        inputElement.value = '';
     }
 
     window.deleteDayImage = async function(type, index) {
@@ -913,7 +981,7 @@
             const wrap = document.createElement('div');
             wrap.className = 'img-thumb-wrap';
             wrap.innerHTML = `
-                <img src="${imgSrc}" class="uploaded-img-preview">
+                <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
                 <button class="img-delete-btn" onclick="deleteDayImage('${type}', ${index})">×</button>
             `;
             container.appendChild(wrap);
@@ -923,10 +991,7 @@
     function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
         const row = document.createElement('div');
         row.className = 'tracker-row';
-
-        const textSpan = document.createElement('span');
-        textSpan.textContent = label;
-        row.appendChild(textSpan);
+        row.innerHTML = `<span>${label}</span>`;
 
         const btn = document.createElement('button');
         btn.className = 'habit-btn';
@@ -935,10 +1000,7 @@
         btn.onclick = async (e) => {
             e.stopPropagation();
             let currentStatus = appData.trackers[storageKey] || 'none';
-            let nextStatus = 'none';
-            if (currentStatus === 'none') nextStatus = 'maru';
-            else if (currentStatus === 'maru') nextStatus = 'batsu';
-            else if (currentStatus === 'batsu') nextStatus = 'none';
+            let nextStatus = currentStatus === 'none' ? 'maru' : (currentStatus === 'maru' ? 'batsu' : 'none');
 
             appData.trackers[storageKey] = nextStatus;
             updateButtonState(btn, nextStatus);
@@ -946,20 +1008,14 @@
             await saveDataToCloud();
 
             if (nextStatus === 'maru') {
-                const mFormatted = String(month).padStart(2, '0');
-                const dFormatted = String(day).padStart(2, '0');
-                const dateStr = `${year}${mFormatted}${dFormatted}`;
-                
+                const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
                 const title = encodeURIComponent(`[実績] ${typeName}完了`);
                 const details = encodeURIComponent(`${year}年${month}月${day}日 ${typeName}を達成しました！`);
-                const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`;
-                
                 if (confirm(`${year}年${month}月${day}日の「${typeName}達成」をGoogleカレンダーに登録しますか？`)) {
-                    window.open(gcalUrl, '_blank');
+                    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`, '_blank');
                 }
             }
         };
-
         row.appendChild(btn);
         return row;
     }
@@ -978,24 +1034,37 @@
     }
 
     // ==========================================
-    // 【ネタ帳（Ideas）管理ロジック（複数画像対応）】
+    // 【ネタ帳管理ロジック】
     // ==========================================
     window.addIdeaItem = async function() {
-        appData.ideas.push({ id: Date.now(), title: '', content: '', images: [] });
-        renderIdeas();
+        const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [] };
+        appData.ideas.push(newItem);
+        activeIdeaId = newItem.id;
+        renderIdeasManager();
         await saveDataToCloud();
     }
 
     window.deleteIdeaItem = async function(id) {
-        appData.ideas = appData.ideas.filter(item => item.id !== id);
-        renderIdeas();
+        appData.ideas = appData.ideas.filter(i => i.id !== id);
+        if (activeIdeaId === id) {
+            activeIdeaId = appData.ideas.length > 0 ? appData.ideas[0].id : null;
+        }
+        renderIdeasManager();
         await saveDataToCloud();
     }
 
-    window.updateIdeaItem = async function(id, field, value) {
+    window.selectIdea = function(id) {
+        activeIdeaId = id;
+        renderIdeasManager();
+    }
+
+    window.handleIdeaChange = async function(id, field, value) {
         const item = appData.ideas.find(i => i.id === id);
         if (item) {
             item[field] = value;
+            if (field === 'title') {
+                renderIdeaSidebar();
+            }
             await saveDataToCloud();
         }
     }
@@ -1003,6 +1072,11 @@
     window.handleIdeaImageUpload = function(id, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
+
+        const fileNames = Array.from(files).map(f => f.name).join(', ');
+        const fileNameEl = document.getElementById(`idea-file-name-${id}`);
+        if (fileNameEl) fileNameEl.textContent = `選択中: ${fileNames}`;
+
         const item = appData.ideas.find(i => i.id === id);
         if (!item) return;
         if (!item.images) item.images = [];
@@ -1014,7 +1088,7 @@
                 item.images.push(e.target.result);
                 processed++;
                 if (processed === files.length) {
-                    renderIdeas();
+                    renderIdeasDetail();
                     await saveDataToCloud();
                 }
             };
@@ -1027,70 +1101,107 @@
         const item = appData.ideas.find(i => i.id === itemId);
         if (item && item.images) {
             item.images.splice(imgIndex, 1);
-            renderIdeas();
+            renderIdeasDetail();
             await saveDataToCloud();
         }
     }
 
-    function renderIdeas() {
-        const container = document.getElementById('ideas-container');
-        container.innerHTML = '';
+    function renderIdeasManager() {
+        renderIdeaSidebar();
+        renderIdeasDetail();
+    }
+
+    function renderIdeaSidebar() {
+        const sidebar = document.getElementById('ideas-sidebar');
+        sidebar.innerHTML = '';
         if (appData.ideas.length === 0) {
-            container.innerHTML = '<p style="font-size:0.85rem; color:#888;">ネタがまだ追加されていません。「＋ ネタを追加」を押して書き込んでください。</p>';
+            sidebar.innerHTML = '<span style="font-size:0.85rem; color:#888; padding:10px;">ネタがありません</span>';
             return;
         }
 
         appData.ideas.forEach(item => {
-            if (!item.images) item.images = [];
-            const card = document.createElement('div');
-            card.className = 'item-card';
-
-            let imgHtml = '';
-            item.images.forEach((imgSrc, imgIdx) => {
-                imgHtml += `
-                    <div class="img-thumb-wrap">
-                        <img src="${imgSrc}" class="uploaded-img-preview">
-                        <button class="img-delete-btn" onclick="deleteIdeaImage(${item.id}, ${imgIdx})">×</button>
-                    </div>
-                `;
-            });
-
-            card.innerHTML = `
-                <button class="delete-btn" onclick="deleteIdeaItem(${item.id})">削除</button>
-                <label style="font-size:0.8rem; font-weight:bold;">タイトル / テーマ:</label>
-                <input type="text" value="${item.title || ''}" placeholder="ネタのタイトルや見出し" oninput="updateIdeaItem(${item.id}, 'title', this.value)">
-                
-                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">詳細内容:</label>
-                <textarea placeholder="アイデアの詳細、セリフ、展開などを入力..." oninput="updateIdeaItem(${item.id}, 'content', this.value)">${item.content || ''}</textarea>
-                
-                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">画像添付 (複数可):</label>
-                <input type="file" accept="image/*" multiple onchange="handleIdeaImageUpload(${item.id}, this)">
-                <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
-                <div class="img-preview-container">${imgHtml}</div>
-            `;
-            container.appendChild(card);
+            const btn = document.createElement('button');
+            btn.className = `list-item-btn ${item.id === activeIdeaId ? 'active' : ''}`;
+            btn.textContent = item.title || '(無題)';
+            btn.onclick = () => selectIdea(item.id);
+            sidebar.appendChild(btn);
         });
     }
 
+    function renderIdeasDetail() {
+        const pane = document.getElementById('ideas-detail');
+        const item = appData.ideas.find(i => i.id === activeIdeaId);
+
+        if (!item) {
+            pane.innerHTML = '<p style="color: #888; text-align: center; margin-top: 100px;">ネタが選択されていません。</p>';
+            return;
+        }
+
+        if (!item.images) item.images = [];
+        let imgHtml = '';
+        item.images.forEach((imgSrc, imgIdx) => {
+            imgHtml += `
+                <div class="img-thumb-wrap">
+                    <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
+                    <button class="img-delete-btn" onclick="deleteIdeaImage(${item.id}, ${imgIdx})">×</button>
+                </div>
+            `;
+        });
+
+        pane.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細編集</h3>
+                <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">このネタを削除</button>
+            </div>
+            
+            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">タイトル / テーマ:</label>
+            <input type="text" value="${item.title || ''}" placeholder="ネタのタイトル" style="width:100%; box-sizing:border-box; margin-bottom:12px;" oninput="handleIdeaChange(${item.id}, 'title', this.value)">
+            
+            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">詳細内容:</label>
+            <textarea class="memo-box" style="height: 180px;" placeholder="アイデアの詳細、セリフ、展開などを入力..." oninput="handleIdeaChange(${item.id}, 'content', this.value)">${item.content || ''}</textarea>
+            
+            <div style="margin-top: 15px;">
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像添付 (複数可 - クリックで拡大):</label>
+                <input type="file" accept="image/*" multiple onchange="handleIdeaImageUpload(${item.id}, this)">
+                <div id="idea-file-name-${item.id}" class="file-name-display">選択されていません</div>
+                <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                <div class="img-preview-container">${imgHtml}</div>
+            </div>
+        `;
+    }
+
     // ==========================================
-    // 【インプット（Inputs）管理ロジック（複数画像対応）】
+    // 【インプット情報管理ロジック】
     // ==========================================
     window.addInputItem = async function() {
-        appData.inputs.push({ id: Date.now(), title: '', link: '', content: '', images: [] });
-        renderInputs();
+        const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [] };
+        appData.inputs.push(newItem);
+        activeInputId = newItem.id;
+        renderInputsManager();
         await saveDataToCloud();
     }
 
     window.deleteInputItem = async function(id) {
-        appData.inputs = appData.inputs.filter(item => item.id !== id);
-        renderInputs();
+        appData.inputs = appData.inputs.filter(i => i.id !== id);
+        if (activeInputId === id) {
+            activeInputId = appData.inputs.length > 0 ? appData.inputs[0].id : null;
+        }
+        renderInputsManager();
         await saveDataToCloud();
     }
 
-    window.updateInputItem = async function(id, field, value) {
+    window.selectInput = function(id) {
+        activeInputId = id;
+        renderInputsManager();
+    }
+
+    window.handleInputChange = async function(id, field, value) {
         const item = appData.inputs.find(i => i.id === id);
         if (item) {
             item[field] = value;
+            if (field === 'title') {
+                renderInputSidebar();
+            }
             await saveDataToCloud();
         }
     }
@@ -1098,6 +1209,11 @@
     window.handleInputImageUpload = function(id, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
+
+        const fileNames = Array.from(files).map(f => f.name).join(', ');
+        const fileNameEl = document.getElementById(`input-file-name-${id}`);
+        if (fileNameEl) fileNameEl.textContent = `選択中: ${fileNames}`;
+
         const item = appData.inputs.find(i => i.id === id);
         if (!item) return;
         if (!item.images) item.images = [];
@@ -1109,7 +1225,7 @@
                 item.images.push(e.target.result);
                 processed++;
                 if (processed === files.length) {
-                    renderInputs();
+                    renderInputsDetail();
                     await saveDataToCloud();
                 }
             };
@@ -1122,56 +1238,93 @@
         const item = appData.inputs.find(i => i.id === itemId);
         if (item && item.images) {
             item.images.splice(imgIndex, 1);
-            renderInputs();
+            renderInputsDetail();
             await saveDataToCloud();
         }
     }
 
-    function renderInputs() {
-        const container = document.getElementById('inputs-container');
-        container.innerHTML = '';
+    function renderInputsManager() {
+        renderInputSidebar();
+        renderInputsDetail();
+    }
+
+    function renderInputSidebar() {
+        const sidebar = document.getElementById('inputs-sidebar');
+        sidebar.innerHTML = '';
         if (appData.inputs.length === 0) {
-            container.innerHTML = '<p style="font-size:0.85rem; color:#888;">インプット情報がまだ追加されていません。「＋ インプットを追加」を押してリンクや資料を管理してください。</p>';
+            sidebar.innerHTML = '<span style="font-size:0.85rem; color:#888; padding:10px;">インプットがありません</span>';
             return;
         }
 
         appData.inputs.forEach(item => {
-            if (!item.images) item.images = [];
-            const card = document.createElement('div');
-            card.className = 'item-card';
+            const btn = document.createElement('button');
+            btn.className = `list-item-btn ${item.id === activeInputId ? 'active' : ''}`;
+            btn.textContent = item.title || '(無題)';
+            btn.onclick = () => selectInput(item.id);
+            sidebar.appendChild(btn);
+        });
+    }
 
-            let imgHtml = '';
-            item.images.forEach((imgSrc, imgIdx) => {
-                imgHtml += `
-                    <div class="img-thumb-wrap">
-                        <img src="${imgSrc}" class="uploaded-img-preview">
-                        <button class="img-delete-btn" onclick="deleteInputImage(${item.id}, ${imgIdx})">×</button>
-                    </div>
-                `;
-            });
+    function renderInputsDetail() {
+        const pane = document.getElementById('inputs-detail');
+        const item = appData.inputs.find(i => i.id === activeInputId);
 
-            card.innerHTML = `
-                <button class="delete-btn" onclick="deleteInputItem(${item.id})">削除</button>
-                <label style="font-size:0.8rem; font-weight:bold;">名称 / タイトル:</label>
-                <input type="text" value="${item.title || ''}" placeholder="参考資料やサイトの名前" oninput="updateInputItem(${item.id}, 'title', this.value)">
-                
-                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">参考リンク (URLなど):</label>
-                <input type="text" value="${item.link || ''}" placeholder="https://..." oninput="updateInputItem(${item.id}, 'link', this.value)">
-                
-                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">メモ・感想:</label>
-                <textarea placeholder="ここから得た気づきや画像情報などのメモ..." oninput="updateInputItem(${item.id}, 'content', this.value)">${item.content || ''}</textarea>
-                
-                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">画像添付 (複数可):</label>
+        if (!item) {
+            pane.innerHTML = '<p style="color: #888; text-align: center; margin-top: 100px;">インプット項目が選択されていません。</p>';
+            return;
+        }
+
+        if (!item.images) item.images = [];
+        let imgHtml = '';
+        item.images.forEach((imgSrc, imgIdx) => {
+            imgHtml += `
+                <div class="img-thumb-wrap">
+                    <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
+                    <button class="img-delete-btn" onclick="deleteInputImage(${item.id}, ${imgIdx})">×</button>
+                </div>
+            `;
+        });
+
+        pane.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細編集</h3>
+                <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">この項目を削除</button>
+            </div>
+            
+            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">名称 / タイトル:</label>
+            <input type="text" value="${item.title || ''}" placeholder="資料やサイトの名称" style="width:100%; box-sizing:border-box; margin-bottom:12px;" oninput="handleInputChange(${item.id}, 'title', this.value)">
+            
+            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">参考リンク (URLなど):</label>
+            <input type="text" value="${item.link || ''}" placeholder="https://..." style="width:100%; box-sizing:border-box; margin-bottom:12px;" oninput="handleInputChange(${item.id}, 'link', this.value)">
+            
+            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">メモ・感想:</label>
+            <textarea class="memo-box" style="height: 140px;" placeholder="ここから得た気づきやメモ..." oninput="handleInputChange(${item.id}, 'content', this.value)">${item.content || ''}</textarea>
+            
+            <div style="margin-top: 15px;">
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像添付 (複数可 - クリックで拡大):</label>
                 <input type="file" accept="image/*" multiple onchange="handleInputImageUpload(${item.id}, this)">
+                <div id="input-file-name-${item.id}" class="file-name-display">選択されていません</div>
                 <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
                 <div class="img-preview-container">${imgHtml}</div>
-            `;
-            container.appendChild(card);
-        });
+            </div>
+        `;
+    }
+
+    // ==========================================
+    // 【画像クローズアップモーダル制御】
+    // ==========================================
+    window.openImageModal = function(src) {
+        const modal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-img');
+        modal.style.display = 'flex';
+        modalImg.src = src;
+    }
+
+    window.closeImageModal = function() {
+        document.getElementById('image-modal').style.display = 'none';
     }
 
     loadDataFromCloud();
 </script>
-
 </body>
 </html>
