@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Progress & Habit Tracker (Cloud Sync)</title>
     <style>
+        /* ==========================================
+           【CSSスタイル定義エリア】
+           全体の配色、レイアウト、各UIパーツの見た目を指定
+           ========================================== */
         :root {
             --bg-color: #f4f6f9;
             --card-bg: #ffffff;
@@ -42,17 +46,18 @@
             margin-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
-            padding: 10px 20px;
+            padding: 10px 15px;
             background-color: var(--gray);
             color: var(--text-color);
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: all 0.2s;
         }
 
@@ -185,9 +190,9 @@
 
         .memo-box {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 5px;
             resize: vertical;
-            height: 80px;
+            height: 70px;
             box-sizing: border-box;
         }
 
@@ -301,26 +306,102 @@
             border-color: var(--danger);
         }
 
-        /* 選択された日の詳細メモビュー */
         .day-detail-card {
             margin-top: 20px;
             background: #fdfefe;
             border: 1px solid var(--primary);
+        }
+
+        /* ネタ帳・インプットカード用スタイル */
+        .item-card {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .item-card textarea {
+            width: 100%;
+            height: 60px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        .item-card input[type="text"] {
+            width: 100%;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        .delete-btn {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            float: right;
+        }
+        .img-preview-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .img-thumb-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .uploaded-img-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .img-delete-btn {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .upload-note {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 2px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+    <h1>制作 ＆ 運動 管理ダッシュボード（クラウド同期）</h1>
 
-    <!-- タブメニュー -->
+    <!-- ==========================================
+       【タブメニュー表示エリア】
+       各画面を切り替えるためのボタン群
+       ========================================== -->
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・習慣</button>
         <button class="tab-btn" onclick="switchTab('manuscript-tab', this)">✍️ 原稿進捗</button>
+        <button class="tab-btn" onclick="switchTab('ideas-tab', this)">💡 ネタ帳</button>
+        <button class="tab-btn" onclick="switchTab('inputs-tab', this)">🔗 インプット</button>
     </div>
 
-    <!-- タブ1: カレンダー・習慣 -->
+    <!-- ==========================================
+       【タブ1: カレンダー・習慣エリア】
+       運動・制作の達成状況、月別カレンダー、日付別メモ（れみぱん/ゆくん用・複数画像対応）
+       ========================================== -->
     <div id="calendar-tab" class="tab-content active">
         <div class="card">
             <div class="section-header">
@@ -339,16 +420,41 @@
             </div>
         </div>
 
-        <!-- 選択した日付のメモ表示エリア -->
+        <!-- 選択した日付の詳細メモビュー（れみぱん猫🐱・ゆくん犬🐶用・複数画像対応） -->
         <div class="card day-detail-card" id="day-detail-section">
             <h3 id="selected-date-title" style="margin-top:0; margin-bottom:10px; font-size: 1rem; color: var(--primary);">日付を選択してください</h3>
-            <textarea id="selected-day-memo" class="memo-box" placeholder="ここに選択した日のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
+            
+            <!-- れみぱん用メモ -->
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: bold; font-size: 0.85rem; color: #2c3e50;">🐱 れみぱん用メモ:</label>
+                <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
+                <div style="margin-top: 5px;">
+                    <label style="font-size: 0.8rem; font-weight: bold;">画像添付 (複数可):</label>
+                    <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
+                    <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                    <div id="remipan-img-preview" class="img-preview-container"></div>
+                </div>
+            </div>
+
+            <!-- ゆくん用メモ -->
+            <div>
+                <label style="font-weight: bold; font-size: 0.85rem; color: #2c3e50;">🐶 ゆくん用メモ:</label>
+                <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
+                <div style="margin-top: 5px;">
+                    <label style="font-size: 0.8rem; font-weight: bold;">画像添付 (複数可):</label>
+                    <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
+                    <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                    <div id="yukun-img-preview" class="img-preview-container"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- タブ2: 原稿進捗 -->
+    <!-- ==========================================
+       【タブ2: 原稿進捗エリア】
+       締め切り・全体進捗・個別工程別の進捗管理
+       ========================================== -->
     <div id="manuscript-tab" class="tab-content">
-        <!-- 締め切り・メモ管理カード（一番上に移動） -->
         <div class="card">
             <h3 style="margin-top:0; margin-bottom:15px;">⏳ 締め切り・全体メモ</h3>
             <div class="deadline-info" style="margin-top: 0;">
@@ -357,12 +463,11 @@
                     <input type="date" id="deadline-date" onchange="saveManuscriptMeta()">
                 </div>
                 <div id="countdown-text" style="color: #e74c3c; font-weight: bold; font-size: 0.85rem;"></div>
-                <button class="gcal-btn" onclick="openGCalDeadline()" style="margin-left: auto;">Googleカレンダーに登録</button>
+                <button class="gcal-btn" onclick="openGCalDeadline()" style="margin-left: auto;">Googleカレンダーに締め切り登録</button>
             </div>
             <textarea id="manuscript-memo" class="memo-box" placeholder="全体制作メモ（例：ネーム締め切り、〇ページ目の作画中など）" oninput="saveManuscriptMeta()"></textarea>
         </div>
 
-        <!-- 全体原稿ページ進捗カード -->
         <div class="card">
             <div class="section-header">
                 <h3 style="margin:0;">✍️ 全体原稿ページ進捗</h3>
@@ -378,7 +483,6 @@
             </div>
         </div>
 
-        <!-- 制作工程別の個別進捗カード -->
         <div class="card">
             <h3 style="margin-top:0; margin-bottom:15px;">📊 工程別進捗管理</h3>
             <div id="process-list-container">
@@ -386,9 +490,46 @@
             </div>
         </div>
     </div>
+
+    <!-- ==========================================
+       【タブ3: ネタ帳エリア】
+       漫画などのネタを複数画像付きで自由に追加・記述・削除できるカード群
+       ========================================== -->
+    <div id="ideas-tab" class="tab-content">
+        <div class="card">
+            <div class="section-header">
+                <h3 style="margin:0;">💡 ネタ帳</h3>
+                <button onclick="addIdeaItem()">＋ ネタを追加</button>
+            </div>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">漫画のアイディア、セリフ、設定などを複数画像と一緒に書き溜めていけます。</p>
+            <div id="ideas-container">
+                <!-- JavaScriptで動的生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+       【タブ4: インプットエリア】
+       外部からの情報や参考資料を複数画像アップロード付きで管理
+       ========================================== -->
+    <div id="inputs-tab" class="tab-content">
+        <div class="card">
+            <div class="section-header">
+                <h3 style="margin:0;">🔗 インプット情報</h3>
+                <button onclick="addInputItem()">＋ インプットを追加</button>
+            </div>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">外部の参考リンクや参考画像を複数アップロードして管理できます。</p>
+            <div id="inputs-container">
+                <!-- JavaScriptで動的生成 -->
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Firebase & 独自のロジック -->
+<!-- ==========================================
+   【JavaScriptロジックエリア】
+   Firebase連携、UI描画、タブ切り替え、データ保存の制御
+   ========================================== -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -407,6 +548,7 @@
     const db = getFirestore(app);
 
     const processes = ['プロット', 'ネーム', '3D配置', '下書き', 'ペン入れ', 'トーン', '写植'];
+    
     let appData = {
         manuscript_current: 0,
         manuscript_target: 24,
@@ -414,14 +556,18 @@
         manuscript_memo: '',
         processes: {},
         trackers: {},
-        day_memos: {}
+        day_memos_remipan: {},
+        day_memos_yukun: {},
+        day_images_remipan: {},
+        day_images_yukun: {},
+        ideas: [],
+        inputs: []
     };
 
     let selectedYear = new Date().getFullYear();
     let selectedMonth = new Date().getMonth() + 1;
     let selectedDay = new Date().getDate();
 
-    // タブ切り替え関数
     window.switchTab = function(tabId, btnElement) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -430,7 +576,6 @@
         btnElement.classList.add('active');
     }
 
-    // 起動時にFirestoreからデータを取得
     async function loadDataFromCloud() {
         try {
             const docRef = doc(db, "dashboard", "main_data");
@@ -439,7 +584,12 @@
                 appData = docSnap.data();
                 if (!appData.processes) appData.processes = {};
                 if (!appData.trackers) appData.trackers = {};
-                if (!appData.day_memos) appData.day_memos = {};
+                if (!appData.day_memos_remipan) appData.day_memos_remipan = {};
+                if (!appData.day_memos_yukun) appData.day_memos_yukun = {};
+                if (!appData.day_images_remipan) appData.day_images_remipan = {};
+                if (!appData.day_images_yukun) appData.day_images_yukun = {};
+                if (!appData.ideas) appData.ideas = [];
+                if (!appData.inputs) appData.inputs = [];
             }
         } catch (e) {
             console.error("データ読み込みエラー:", e);
@@ -447,7 +597,6 @@
         updateUI();
     }
 
-    // Firestoreへデータを保存
     async function saveDataToCloud() {
         try {
             await setDoc(doc(db, "dashboard", "main_data"), appData);
@@ -456,7 +605,6 @@
         }
     }
 
-    // UIへ反映
     function updateUI() {
         document.getElementById('current-page').value = appData.manuscript_current ?? 0;
         document.getElementById('target-page').value = appData.manuscript_target ?? 24;
@@ -468,6 +616,8 @@
         updateCountdown(appData.manuscript_deadline ?? '');
         renderCalendar();
         updateSelectedDayView();
+        renderIdeas();
+        renderInputs();
     }
 
     window.updateManuscript = async function() {
@@ -534,7 +684,7 @@
         appData.manuscript_deadline = document.getElementById('deadline-date').value;
         appData.manuscript_memo = document.getElementById('manuscript-memo').value;
         updateCountdown(appData.manuscript_deadline);
-        renderCalendar(); // カレンダーの表示も更新する
+        renderCalendar();
         await saveDataToCloud();
     }
 
@@ -570,8 +720,7 @@
         let eventDetails = memo;
 
         if (memo) {
-            const firstLine = memo.split('\n')[0];
-            eventTitle = firstLine;
+            eventTitle = memo.split('\n')[0];
         }
 
         const text = encodeURIComponent(eventTitle);
@@ -592,7 +741,6 @@
         window.open(url, '_blank');
     }
 
-    // カレンダーロジック
     let todayDate = new Date();
     let currentYear = todayDate.getFullYear();
     let currentMonth = todayDate.getMonth();
@@ -645,7 +793,6 @@
                 cell.classList.add('selected');
             }
 
-            // 日付クリックで下のメモ欄に反映
             cell.onclick = (e) => {
                 if (e.target.tagName === 'BUTTON') return;
                 selectedYear = currentYear;
@@ -663,7 +810,6 @@
             num.textContent = day;
             headerRow.appendChild(num);
 
-            // 締め切り日と一致する場合、カレンダーのセルにバッジを表示する
             const deadlineStr = appData.manuscript_deadline;
             if (deadlineStr) {
                 const dDate = new Date(deadlineStr);
@@ -677,7 +823,6 @@
 
             cell.appendChild(headerRow);
 
-            // トラッカー（運動・制作）
             const container = document.createElement('div');
             container.className = 'trackers-container';
 
@@ -701,18 +846,78 @@
 
     function updateSelectedDayView() {
         const titleEl = document.getElementById('selected-date-title');
-        const memoInput = document.getElementById('selected-day-memo');
+        const memoInputRemipan = document.getElementById('selected-day-memo-remipan');
+        const memoInputYukun = document.getElementById('selected-day-memo-yukun');
+        
         titleEl.textContent = `📝 ${selectedYear}年${selectedMonth}月${selectedDay}日のメモ`;
         
         const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        memoInput.value = appData.day_memos[memoKey] || '';
+        memoInputRemipan.value = appData.day_memos_remipan[memoKey] || '';
+        memoInputYukun.value = appData.day_memos_yukun[memoKey] || '';
+
+        renderDayImages('remipan');
+        renderDayImages('yukun');
     }
 
     window.saveSelectedDayMemo = async function() {
         const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        const memoInput = document.getElementById('selected-day-memo');
-        appData.day_memos[memoKey] = memoInput.value;
+        appData.day_memos_remipan[memoKey] = document.getElementById('selected-day-memo-remipan').value;
+        appData.day_memos_yukun[memoKey] = document.getElementById('selected-day-memo-yukun').value;
         await saveDataToCloud();
+    }
+
+    window.handleDayImageUpload = function(type, inputElement) {
+        const files = inputElement.files;
+        if (!files || files.length === 0) return;
+
+        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
+        if (!targetObj[imgKey]) {
+            targetObj[imgKey] = [];
+        }
+
+        let processed = 0;
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                targetObj[imgKey].push(e.target.result);
+                processed++;
+                if (processed === files.length) {
+                    renderDayImages(type);
+                    await saveDataToCloud();
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+        inputElement.value = ''; // リセット
+    }
+
+    window.deleteDayImage = async function(type, index) {
+        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
+        if (targetObj[imgKey]) {
+            targetObj[imgKey].splice(index, 1);
+            renderDayImages(type);
+            await saveDataToCloud();
+        }
+    }
+
+    function renderDayImages(type) {
+        const container = document.getElementById(`${type}-img-preview`);
+        container.innerHTML = '';
+        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
+        const images = targetObj[imgKey] || [];
+
+        images.forEach((imgSrc, index) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'img-thumb-wrap';
+            wrap.innerHTML = `
+                <img src="${imgSrc}" class="uploaded-img-preview">
+                <button class="img-delete-btn" onclick="deleteDayImage('${type}', ${index})">×</button>
+            `;
+            container.appendChild(wrap);
+        });
     }
 
     function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
@@ -772,7 +977,199 @@
         }
     }
 
-    // 初回ロード実行
+    // ==========================================
+    // 【ネタ帳（Ideas）管理ロジック（複数画像対応）】
+    // ==========================================
+    window.addIdeaItem = async function() {
+        appData.ideas.push({ id: Date.now(), title: '', content: '', images: [] });
+        renderIdeas();
+        await saveDataToCloud();
+    }
+
+    window.deleteIdeaItem = async function(id) {
+        appData.ideas = appData.ideas.filter(item => item.id !== id);
+        renderIdeas();
+        await saveDataToCloud();
+    }
+
+    window.updateIdeaItem = async function(id, field, value) {
+        const item = appData.ideas.find(i => i.id === id);
+        if (item) {
+            item[field] = value;
+            await saveDataToCloud();
+        }
+    }
+
+    window.handleIdeaImageUpload = function(id, inputElement) {
+        const files = inputElement.files;
+        if (!files || files.length === 0) return;
+        const item = appData.ideas.find(i => i.id === id);
+        if (!item) return;
+        if (!item.images) item.images = [];
+
+        let processed = 0;
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                item.images.push(e.target.result);
+                processed++;
+                if (processed === files.length) {
+                    renderIdeas();
+                    await saveDataToCloud();
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+        inputElement.value = '';
+    }
+
+    window.deleteIdeaImage = async function(itemId, imgIndex) {
+        const item = appData.ideas.find(i => i.id === itemId);
+        if (item && item.images) {
+            item.images.splice(imgIndex, 1);
+            renderIdeas();
+            await saveDataToCloud();
+        }
+    }
+
+    function renderIdeas() {
+        const container = document.getElementById('ideas-container');
+        container.innerHTML = '';
+        if (appData.ideas.length === 0) {
+            container.innerHTML = '<p style="font-size:0.85rem; color:#888;">ネタがまだ追加されていません。「＋ ネタを追加」を押して書き込んでください。</p>';
+            return;
+        }
+
+        appData.ideas.forEach(item => {
+            if (!item.images) item.images = [];
+            const card = document.createElement('div');
+            card.className = 'item-card';
+
+            let imgHtml = '';
+            item.images.forEach((imgSrc, imgIdx) => {
+                imgHtml += `
+                    <div class="img-thumb-wrap">
+                        <img src="${imgSrc}" class="uploaded-img-preview">
+                        <button class="img-delete-btn" onclick="deleteIdeaImage(${item.id}, ${imgIdx})">×</button>
+                    </div>
+                `;
+            });
+
+            card.innerHTML = `
+                <button class="delete-btn" onclick="deleteIdeaItem(${item.id})">削除</button>
+                <label style="font-size:0.8rem; font-weight:bold;">タイトル / テーマ:</label>
+                <input type="text" value="${item.title || ''}" placeholder="ネタのタイトルや見出し" oninput="updateIdeaItem(${item.id}, 'title', this.value)">
+                
+                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">詳細内容:</label>
+                <textarea placeholder="アイデアの詳細、セリフ、展開などを入力..." oninput="updateIdeaItem(${item.id}, 'content', this.value)">${item.content || ''}</textarea>
+                
+                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">画像添付 (複数可):</label>
+                <input type="file" accept="image/*" multiple onchange="handleIdeaImageUpload(${item.id}, this)">
+                <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                <div class="img-preview-container">${imgHtml}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // ==========================================
+    // 【インプット（Inputs）管理ロジック（複数画像対応）】
+    // ==========================================
+    window.addInputItem = async function() {
+        appData.inputs.push({ id: Date.now(), title: '', link: '', content: '', images: [] });
+        renderInputs();
+        await saveDataToCloud();
+    }
+
+    window.deleteInputItem = async function(id) {
+        appData.inputs = appData.inputs.filter(item => item.id !== id);
+        renderInputs();
+        await saveDataToCloud();
+    }
+
+    window.updateInputItem = async function(id, field, value) {
+        const item = appData.inputs.find(i => i.id === id);
+        if (item) {
+            item[field] = value;
+            await saveDataToCloud();
+        }
+    }
+
+    window.handleInputImageUpload = function(id, inputElement) {
+        const files = inputElement.files;
+        if (!files || files.length === 0) return;
+        const item = appData.inputs.find(i => i.id === id);
+        if (!item) return;
+        if (!item.images) item.images = [];
+
+        let processed = 0;
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                item.images.push(e.target.result);
+                processed++;
+                if (processed === files.length) {
+                    renderInputs();
+                    await saveDataToCloud();
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+        inputElement.value = '';
+    }
+
+    window.deleteInputImage = async function(itemId, imgIndex) {
+        const item = appData.inputs.find(i => i.id === itemId);
+        if (item && item.images) {
+            item.images.splice(imgIndex, 1);
+            renderInputs();
+            await saveDataToCloud();
+        }
+    }
+
+    function renderInputs() {
+        const container = document.getElementById('inputs-container');
+        container.innerHTML = '';
+        if (appData.inputs.length === 0) {
+            container.innerHTML = '<p style="font-size:0.85rem; color:#888;">インプット情報がまだ追加されていません。「＋ インプットを追加」を押してリンクや資料を管理してください。</p>';
+            return;
+        }
+
+        appData.inputs.forEach(item => {
+            if (!item.images) item.images = [];
+            const card = document.createElement('div');
+            card.className = 'item-card';
+
+            let imgHtml = '';
+            item.images.forEach((imgSrc, imgIdx) => {
+                imgHtml += `
+                    <div class="img-thumb-wrap">
+                        <img src="${imgSrc}" class="uploaded-img-preview">
+                        <button class="img-delete-btn" onclick="deleteInputImage(${item.id}, ${imgIdx})">×</button>
+                    </div>
+                `;
+            });
+
+            card.innerHTML = `
+                <button class="delete-btn" onclick="deleteInputItem(${item.id})">削除</button>
+                <label style="font-size:0.8rem; font-weight:bold;">名称 / タイトル:</label>
+                <input type="text" value="${item.title || ''}" placeholder="参考資料やサイトの名前" oninput="updateInputItem(${item.id}, 'title', this.value)">
+                
+                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">参考リンク (URLなど):</label>
+                <input type="text" value="${item.link || ''}" placeholder="https://..." oninput="updateInputItem(${item.id}, 'link', this.value)">
+                
+                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">メモ・感想:</label>
+                <textarea placeholder="ここから得た気づきや画像情報などのメモ..." oninput="updateInputItem(${item.id}, 'content', this.value)">${item.content || ''}</textarea>
+                
+                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-top:8px;">画像添付 (複数可):</label>
+                <input type="file" accept="image/*" multiple onchange="handleInputImageUpload(${item.id}, this)">
+                <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                <div class="img-preview-container">${imgHtml}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
     loadDataFromCloud();
 </script>
 
