@@ -367,6 +367,50 @@
             font-size: 0.8rem;
         }
 
+        .edit-btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* 概要表示用スタイル */
+        .overview-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .overview-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .overview-link {
+            display: inline-block;
+            margin-bottom: 10px;
+            color: var(--primary);
+            word-break: break-all;
+            font-size: 0.85rem;
+        }
+
         /* 画像プレビュー＆クローズアップ関連 */
         .img-preview-container {
             display: flex;
@@ -459,7 +503,7 @@
 <body>
 
 <div class="container">
-    <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+    <h1>制作 ＆ 運動 管理ダッシュボード（クラウド同期）</h1>
 
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・習慣</button>
@@ -492,27 +536,47 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <!-- れみぱん用メモ -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50; display: block; margin-bottom: 5px;">🐱 れみぱん用メモ:</label>
-                    <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
-                    <div style="margin-top: 10px;">
-                        <label style="font-size: 0.8rem; font-weight: bold;">画像添付 (複数可):</label>
-                        <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
-                        <div id="remipan-file-name" class="file-name-display">選択されていません</div>
-                        <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
-                        <div id="remipan-img-preview" class="img-preview-container"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50;">🐱 れみぱん用メモ</label>
+                        <div class="action-group" id="remipan-action-group">
+                            <button class="edit-btn-primary" onclick="toggleDayEdit('remipan')">編集する</button>
+                        </div>
+                    </div>
+                    <div id="remipan-view-container"></div>
+                    <div id="remipan-edit-container" style="display: none;">
+                        <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力..."></textarea>
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可):</label>
+                            <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
+                            <div id="remipan-file-name" class="file-name-display">選択されていません</div>
+                            <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                        </div>
+                        <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
+                            <button onclick="saveDayMemoAndClose('remipan')">登録する</button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- ゆくん用メモ -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50; display: block; margin-bottom: 5px;">🐶 ゆくん用メモ:</label>
-                    <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力..." oninput="saveSelectedDayMemo()"></textarea>
-                    <div style="margin-top: 10px;">
-                        <label style="font-size: 0.8rem; font-weight: bold;">画像添付 (複数可):</label>
-                        <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
-                        <div id="yukun-file-name" class="file-name-display">選択されていません</div>
-                        <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
-                        <div id="yukun-img-preview" class="img-preview-container"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50;">🐶 ゆくん用メモ</label>
+                        <div class="action-group" id="yukun-action-group">
+                            <button class="edit-btn-primary" onclick="toggleDayEdit('yukun')">編集する</button>
+                        </div>
+                    </div>
+                    <div id="yukun-view-container"></div>
+                    <div id="yukun-edit-container" style="display: none;">
+                        <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力..."></textarea>
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可):</label>
+                            <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
+                            <div id="yukun-file-name" class="file-name-display">選択されていません</div>
+                            <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                        </div>
+                        <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
+                            <button onclick="saveDayMemoAndClose('yukun')">登録する</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -561,7 +625,7 @@
                 <h3 style="margin:0;">💡 ネタ帳</h3>
                 <button onclick="addIdeaItem()">＋ 新規ネタを追加</button>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると、1ページで詳細な内容の確認・修正が行えます。</p>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると詳細概要の確認・編集が行えます。</p>
             
             <div class="manager-layout">
                 <div class="sidebar-list" id="ideas-sidebar"></div>
@@ -579,7 +643,7 @@
                 <h3 style="margin:0;">🔗 インプット情報</h3>
                 <button onclick="addInputItem()">＋ 新規インプットを追加</button>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると、リンクや詳細内容、画像をまとめて確認・修正できます。</p>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択するとリンクや詳細内容、画像を確認・編集できます。</p>
             
             <div class="manager-layout">
                 <div class="sidebar-list" id="inputs-sidebar"></div>
@@ -637,6 +701,10 @@
 
     let activeIdeaId = null;
     let activeInputId = null;
+
+    // カレンダーメモの編集状態管理フラグ
+    let isRemipanEditing = false;
+    let isYukunEditing = false;
 
     window.switchTab = function(tabId, btnElement) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -867,6 +935,8 @@
                 selectedYear = currentYear;
                 selectedMonth = currentMonth + 1;
                 selectedDay = day;
+                isRemipanEditing = false;
+                isYukunEditing = false;
                 renderCalendar();
                 updateSelectedDayView();
             };
@@ -915,28 +985,103 @@
         document.getElementById('selected-date-title').textContent = `📝 ${selectedYear}年${selectedMonth}月${selectedDay}日のメモ`;
         
         const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        document.getElementById('selected-day-memo-remipan').value = appData.day_memos_remipan[memoKey] || '';
-        document.getElementById('selected-day-memo-yukun').value = appData.day_memos_yukun[memoKey] || '';
+        const remipanMemo = appData.day_memos_remipan[memoKey] || '';
+        const yukunMemo = appData.day_memos_yukun[memoKey] || '';
+
+        document.getElementById('selected-day-memo-remipan').value = remipanMemo;
+        document.getElementById('selected-day-memo-yukun').value = yukunMemo;
 
         document.getElementById('remipan-file-name').textContent = '選択されていません';
         document.getElementById('yukun-file-name').textContent = '選択されていません';
 
-        renderDayImages('remipan');
-        renderDayImages('yukun');
+        renderDaySection('remipan', remipanMemo);
+        renderDaySection('yukun', yukunMemo);
     }
 
-    window.saveSelectedDayMemo = async function() {
+    function renderDaySection(type, memoText) {
+        const isEditing = (type === 'remipan') ? isRemipanEditing : isYukunEditing;
+        const viewContainer = document.getElementById(`${type}-view-container`);
+        const editContainer = document.getElementById(`${type}-edit-container`);
+        const actionGroup = document.getElementById(`${type}-action-group`);
+
+        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
+        const images = targetObj[imgKey] || [];
+
+        // アクションボタン（編集・削除など）の構成
+        if (!isEditing) {
+            editContainer.style.display = 'none';
+            viewContainer.style.display = 'block';
+
+            let actionHtml = `<button class="edit-btn-primary" onclick="toggleDayEdit('${type}')">編集する</button>`;
+            if (memoText.trim() !== '' || images.length > 0) {
+                actionHtml += `<button class="delete-btn-danger" onclick="clearDayData('${type}')">削除</button>`;
+            }
+            actionGroup.innerHTML = actionHtml;
+
+            // 閲覧ビューの構築
+            let imgHtml = '';
+            images.forEach((imgSrc) => {
+                imgHtml += `<div class="img-thumb-wrap"><img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')"></div>`;
+            });
+
+            viewContainer.innerHTML = `
+                <div class="overview-box">${memoText ? memoText : '<span style="color:#aaa;">メモはありません</span>'}</div>
+                ${imgHtml ? `<div class="img-preview-container">${imgHtml}</div>` : ''}
+            `;
+        } else {
+            editContainer.style.display = 'block';
+            viewContainer.style.display = 'none';
+
+            let actionHtml = `<button class="delete-btn-danger" onclick="clearDayData('${type}')">削除</button>`;
+            actionGroup.innerHTML = actionHtml;
+        }
+    }
+
+    window.toggleDayEdit = function(type) {
+        if (type === 'remipan') {
+            isRemipanEditing = !isRemipanEditing;
+        } else {
+            isYukunEditing = !isYukunEditing;
+        }
+        updateSelectedDayView();
+    }
+
+    window.saveDayMemoAndClose = async function(type) {
         const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        appData.day_memos_remipan[memoKey] = document.getElementById('selected-day-memo-remipan').value;
-        appData.day_memos_yukun[memoKey] = document.getElementById('selected-day-memo-yukun').value;
+        if (type === 'remipan') {
+            appData.day_memos_remipan[memoKey] = document.getElementById('selected-day-memo-remipan').value;
+            isRemipanEditing = false;
+        } else {
+            appData.day_memos_yukun[memoKey] = document.getElementById('selected-day-memo-yukun').value;
+            isYukunEditing = false;
+        }
         await saveDataToCloud();
+        updateSelectedDayView();
     }
 
-    window.handleDayImageUpload = function(type, inputElement) {
+    window.clearDayData = async function(type) {
+        if (!confirm('この日のメモと画像をすべて削除しますか？')) return;
+        const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+
+        if (type === 'remipan') {
+            delete appData.day_memos_remipan[memoKey];
+            delete appData.day_images_remipan[imgKey];
+            isRemipanEditing = false;
+        } else {
+            delete appData.day_memos_yukun[memoKey];
+            delete appData.day_images_yukun[imgKey];
+            isYukunEditing = false;
+        }
+        await saveDataToCloud();
+        updateSelectedDayView();
+    }
+
+    window.handleDayImageUpload = async function(type, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
 
-        // 選択されたファイル名を表示
         const fileNames = Array.from(files).map(f => f.name).join(', ');
         document.getElementById(`${type}-file-name`).textContent = `選択中: ${fileNames}`;
 
@@ -951,41 +1096,12 @@
                 targetObj[imgKey].push(e.target.result);
                 processed++;
                 if (processed === files.length) {
-                    renderDayImages(type);
                     await saveDataToCloud();
                 }
             };
             reader.readAsDataURL(file);
         });
         inputElement.value = '';
-    }
-
-    window.deleteDayImage = async function(type, index) {
-        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
-        if (targetObj[imgKey]) {
-            targetObj[imgKey].splice(index, 1);
-            renderDayImages(type);
-            await saveDataToCloud();
-        }
-    }
-
-    function renderDayImages(type) {
-        const container = document.getElementById(`${type}-img-preview`);
-        container.innerHTML = '';
-        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
-        const images = targetObj[imgKey] || [];
-
-        images.forEach((imgSrc, index) => {
-            const wrap = document.createElement('div');
-            wrap.className = 'img-thumb-wrap';
-            wrap.innerHTML = `
-                <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
-                <button class="img-delete-btn" onclick="deleteDayImage('${type}', ${index})">×</button>
-            `;
-            container.appendChild(wrap);
-        });
     }
 
     function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
@@ -1037,7 +1153,7 @@
     // 【ネタ帳管理ロジック】
     // ==========================================
     window.addIdeaItem = async function() {
-        const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [] };
+        const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [], isEditing: true };
         appData.ideas.push(newItem);
         activeIdeaId = newItem.id;
         renderIdeasManager();
@@ -1058,13 +1174,22 @@
         renderIdeasManager();
     }
 
-    window.handleIdeaChange = async function(id, field, value) {
+    window.toggleIdeaEdit = function(id) {
         const item = appData.ideas.find(i => i.id === id);
         if (item) {
-            item[field] = value;
-            if (field === 'title') {
-                renderIdeaSidebar();
-            }
+            item.isEditing = !item.isEditing;
+            renderIdeasDetail();
+        }
+    }
+
+    window.saveIdeaEdit = async function(id) {
+        const item = appData.ideas.find(i => i.id === id);
+        if (item) {
+            item.title = document.getElementById(`idea-title-input-${id}`).value;
+            item.content = document.getElementById(`idea-content-input-${id}`).value;
+            item.isEditing = false;
+            renderIdeaSidebar();
+            renderIdeasDetail();
             await saveDataToCloud();
         }
     }
@@ -1143,38 +1268,60 @@
             imgHtml += `
                 <div class="img-thumb-wrap">
                     <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
-                    <button class="img-delete-btn" onclick="deleteIdeaImage(${item.id}, ${imgIdx})">×</button>
+                    ${item.isEditing ? `<button class="img-delete-btn" onclick="deleteIdeaImage(${item.id}, ${imgIdx})">×</button>` : ''}
                 </div>
             `;
         });
 
-        pane.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細編集</h3>
-                <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">このネタを削除</button>
-            </div>
-            
-            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">タイトル / テーマ:</label>
-            <input type="text" value="${item.title || ''}" placeholder="ネタのタイトル" style="width:100%; box-sizing:border-box; margin-bottom:12px;" oninput="handleIdeaChange(${item.id}, 'title', this.value)">
-            
-            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">詳細内容:</label>
-            <textarea class="memo-box" style="height: 180px;" placeholder="アイデアの詳細、セリフ、展開などを入力..." oninput="handleIdeaChange(${item.id}, 'content', this.value)">${item.content || ''}</textarea>
-            
-            <div style="margin-top: 15px;">
-                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像添付 (複数可 - クリックで拡大):</label>
-                <input type="file" accept="image/*" multiple onchange="handleIdeaImageUpload(${item.id}, this)">
-                <div id="idea-file-name-${item.id}" class="file-name-display">選択されていません</div>
-                <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
-                <div class="img-preview-container">${imgHtml}</div>
-            </div>
-        `;
+        if (!item.isEditing) {
+            // 閲覧モード（概要表示）
+            pane.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細確認</h3>
+                    <div class="action-group">
+                        <button class="edit-btn-primary" onclick="toggleIdeaEdit(${item.id})">編集する</button>
+                        <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">削除</button>
+                    </div>
+                </div>
+                
+                <div class="overview-title">${item.title || '(無題)'}</div>
+                <div class="overview-box">${item.content || '<span style="color:#aaa;">詳細内容はありません</span>'}</div>
+                
+                ${imgHtml ? `<div style="margin-top: 15px;"><label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">添付画像 (クリックで拡大):</label><div class="img-preview-container">${imgHtml}</div></div>` : ''}
+            `;
+        } else {
+            // 編集モード
+            pane.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細編集</h3>
+                    <div class="action-group">
+                        <button class="edit-btn-primary" onclick="saveIdeaEdit(${item.id})">登録する</button>
+                        <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">削除</button>
+                    </div>
+                </div>
+                
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">タイトル / テーマ:</label>
+                <input type="text" id="idea-title-input-${item.id}" value="${item.title || ''}" placeholder="ネタのタイトル" style="width:100%; box-sizing:border-box; margin-bottom:12px;">
+                
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">詳細内容:</label>
+                <textarea id="idea-content-input-${item.id}" class="memo-box" style="height: 180px;" placeholder="アイデアの詳細、セリフ、展開などを入力...">${item.content || ''}</textarea>
+                
+                <div style="margin-top: 15px;">
+                    <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像追加 (複数可):</label>
+                    <input type="file" accept="image/*" multiple onchange="handleIdeaImageUpload(${item.id}, this)">
+                    <div id="idea-file-name-${item.id}" class="file-name-display">選択されていません</div>
+                    <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                    <div class="img-preview-container">${imgHtml}</div>
+                </div>
+            `;
+        }
     }
 
     // ==========================================
     // 【インプット情報管理ロジック】
     // ==========================================
     window.addInputItem = async function() {
-        const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [] };
+        const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [], isEditing: true };
         appData.inputs.push(newItem);
         activeInputId = newItem.id;
         renderInputsManager();
@@ -1195,13 +1342,23 @@
         renderInputsManager();
     }
 
-    window.handleInputChange = async function(id, field, value) {
+    window.toggleInputEdit = function(id) {
         const item = appData.inputs.find(i => i.id === id);
         if (item) {
-            item[field] = value;
-            if (field === 'title') {
-                renderInputSidebar();
-            }
+            item.isEditing = !item.isEditing;
+            renderInputsDetail();
+        }
+    }
+
+    window.saveInputEdit = async function(id) {
+        const item = appData.inputs.find(i => i.id === id);
+        if (item) {
+            item.title = document.getElementById(`input-title-input-${id}`).value;
+            item.link = document.getElementById(`input-link-input-${id}`).value;
+            item.content = document.getElementById(`input-content-input-${id}`).value;
+            item.isEditing = false;
+            renderInputSidebar();
+            renderInputsDetail();
             await saveDataToCloud();
         }
     }
@@ -1280,34 +1437,57 @@
             imgHtml += `
                 <div class="img-thumb-wrap">
                     <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
-                    <button class="img-delete-btn" onclick="deleteInputImage(${item.id}, ${imgIdx})">×</button>
+                    ${item.isEditing ? `<button class="img-delete-btn" onclick="deleteInputImage(${item.id}, ${imgIdx})">×</button>` : ''}
                 </div>
             `;
         });
 
-        pane.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細編集</h3>
-                <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">この項目を削除</button>
-            </div>
-            
-            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">名称 / タイトル:</label>
-            <input type="text" value="${item.title || ''}" placeholder="資料やサイトの名称" style="width:100%; box-sizing:border-box; margin-bottom:12px;" oninput="handleInputChange(${item.id}, 'title', this.value)">
-            
-            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">参考リンク (URLなど):</label>
-            <input type="text" value="${item.link || ''}" placeholder="https://..." style="width:100%; box-sizing:border-box; margin-bottom:12px;" oninput="handleInputChange(${item.id}, 'link', this.value)">
-            
-            <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">メモ・感想:</label>
-            <textarea class="memo-box" style="height: 140px;" placeholder="ここから得た気づきやメモ..." oninput="handleInputChange(${item.id}, 'content', this.value)">${item.content || ''}</textarea>
-            
-            <div style="margin-top: 15px;">
-                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像添付 (複数可 - クリックで拡大):</label>
-                <input type="file" accept="image/*" multiple onchange="handleInputImageUpload(${item.id}, this)">
-                <div id="input-file-name-${item.id}" class="file-name-display">選択されていません</div>
-                <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
-                <div class="img-preview-container">${imgHtml}</div>
-            </div>
-        `;
+        if (!item.isEditing) {
+            // 閲覧モード（概要表示）
+            pane.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細確認</h3>
+                    <div class="action-group">
+                        <button class="edit-btn-primary" onclick="toggleInputEdit(${item.id})">編集する</button>
+                        <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
+                    </div>
+                </div>
+                
+                <div class="overview-title">${item.title || '(無題)'}</div>
+                ${item.link ? `<a href="${item.link}" target="_blank" class="overview-link">🔗 ${item.link}</a>` : ''}
+                <div class="overview-box">${item.content || '<span style="color:#aaa;">メモや感想はありません</span>'}</div>
+                
+                ${imgHtml ? `<div style="margin-top: 15px;"><label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">添付画像 (クリックで拡大):</label><div class="img-preview-container">${imgHtml}</div></div>` : ''}
+            `;
+        } else {
+            // 編集モード
+            pane.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細編集</h3>
+                    <div class="action-group">
+                        <button class="edit-btn-primary" onclick="saveInputEdit(${item.id})">登録する</button>
+                        <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
+                    </div>
+                </div>
+                
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">名称 / タイトル:</label>
+                <input type="text" id="input-title-input-${item.id}" value="${item.title || ''}" placeholder="資料やサイトの名称" style="width:100%; box-sizing:border-box; margin-bottom:12px;">
+                
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">参考リンク (URLなど):</label>
+                <input type="text" id="input-link-input-${item.id}" value="${item.link || ''}" placeholder="https://..." style="width:100%; box-sizing:border-box; margin-bottom:12px;">
+                
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">メモ・感想:</label>
+                <textarea id="input-content-input-${item.id}" class="memo-box" style="height: 140px;" placeholder="ここから得た気づきやメモ...">${item.content || ''}</textarea>
+                
+                <div style="margin-top: 15px;">
+                    <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像追加 (複数可):</label>
+                    <input type="file" accept="image/*" multiple onchange="handleInputImageUpload(${item.id}, this)">
+                    <div id="input-file-name-${item.id}" class="file-name-display">選択されていません</div>
+                    <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                    <div class="img-preview-container">${imgHtml}</div>
+                </div>
+            `;
+        }
     }
 
     // ==========================================
