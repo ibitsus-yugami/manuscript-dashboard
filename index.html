@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progress & Habit Tracker (Cloud Sync)</title>
+    <title>Progress & Habit Tracker (Realtime Transaction Sync)</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -499,7 +499,7 @@
 <body>
 
 <div class="container">
-    <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+    <h1>制作 ＆ 運動 管理ダッシュボード（リアルタイムトランザクション同期）</h1>
 
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・習慣</button>
@@ -659,7 +659,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBvOPGpWEgHxcRR9WQpiHmdLMcumtc2t-o",
@@ -710,96 +710,71 @@
     }
 
     // ==========================================
-    // 【アクション直前の最新データ取得 ＆ 保存処理】
+    // 【Firestore トランザクション処理（データ整合性・競合防止）】
     // ==========================================
-    async function fetchLatestAndRun(actionCallback) {
+    async function updateCloudData(updateLogic) {
+        const docRef = doc(db, "dashboard", "main_data");
         try {
-            const docRef = doc(db, "dashboard", "main_data");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const cloudData = docSnap.data();
-                // ローカルの未保存の変更とクラウドをマージ、あるいは最新状態に更新
-                // ここでは安全のためクラウドデータをベースにローカルを補正する
-                mergeCloudData(cloudData);
-            }
+            await runTransaction(db, async (transaction) => {
+                const docSnap = await transaction.get(docRef);
+                let cloudData = docSnap.exists() ? docSnap.data() : {
+                    manuscript_current: 0,
+                    manuscript_target: 24,
+                    manuscript_deadline: '',
+                    manuscript_memo: '',
+                    processes: {},
+                    trackers: {},
+                    day_memos_remipan: {},
+                    day_memos_yukun: {},
+                    day_images_remipan: {},
+                    day_images_yukun: {},
+                    ideas: [],
+                    inputs: []
+                };
+
+                // コールバック内で最新のcloudDataを直接操作して変更を加える
+                updateLogic(cloudData);
+
+                transaction.set(docRef, cloudData);
+            });
         } catch (e) {
-            console.error("最新データ取得エラー:", e);
-        }
-        await actionCallback();
-    }
-
-    function mergeCloudData(cloudData) {
-        // クラウド側に存在してローカルにない、または競合を防ぐためのマージ処理
-        if (!appData.ideas) appData.ideas = [];
-        if (!cloudData.ideas) cloudData.ideas = [];
-
-        // アイデアやインプットなどはIDベースで結合（クラウド側を優先またはマージ）
-        // 簡易的に最新のクラウドデータ全体をベースにしつつ、現在自分が編集中などのデータが消えないように考慮
-        appData = { ...cloudData };
-    }
-
-    async function saveDataToCloud() {
-        try {
-            // 保存する直前にも念のため最新データをフェッチしてから書き込むことで上書き事故を防止
-            const docRef = doc(db, "dashboard", "main_data");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const cloudData = docSnap.data();
-                // データのロストを防ぐため、アイデアやインプット、メモ等の配列・オブジェクトを統合する
-                // （例えば、相手が追加した新しいアイデアやインプットを消さないようにIDでマージする）
-                appData.ideas = mergeItems(cloudData.ideas || [], appData.ideas || []);
-                appData.inputs = mergeItems(cloudData.inputs || [], appData.inputs || []);
-                appData.day_memos_remipan = { ...(cloudData.day_memos_remipan || {}), ...(appData.day_memos_remipan || {}) };
-                appData.day_memos_yukun = { ...(cloudData.day_memos_yukun || {}), ...(appData.day_memos_yukun || {}) };
-                appData.day_images_remipan = { ...(cloudData.day_images_remipan || {}), ...(appData.day_images_remipan || {}) };
-                appData.day_images_yukun = { ...(cloudData.day_images_yukun || {}), ...(appData.day_images_yukun || {}) };
-                appData.trackers = { ...(cloudData.trackers || {}), ...(appData.trackers || {}) };
-            }
-            await setDoc(docRef, appData);
-        } catch (e) {
-            console.error("データ保存エラー:", e);
+            console.error("トランザクション失敗:", e);
         }
     }
 
-    function mergeItems(cloudList, localList) {
-        const map = new Map();
-        // まずクラウド側を登録
-        cloudList.forEach(item => map.set(item.id, item));
-        // ローカル側で上書き・追加
-        localList.forEach(item => {
-            // 編集中のものはローカルを優先、それ以外もIDベースで統合
-            map.set(item.id, item);
-        });
-        return Array.from(map.values());
-    }
-
     // ==========================================
-    // 【リアルタイム自動同期（onSnapshot）の開始】
+    // 【リアルタイム自動同期（onSnapshot）の常時監視】
     // ==========================================
     function initRealtimeSync() {
         const docRef = doc(db, "dashboard", "main_data");
         onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const cloudData = docSnap.data();
-                // 自分が現在編集中（入力欄を開いているなど）のデータを強制上書きされないように配慮しつつ全体を更新
-                const remoteIdeasCount = (cloudData.ideas || []).length;
-                const localIdeasCount = (appData.ideas || []).length;
+                appData = {
+                    manuscript_current: cloudData.manuscript_current ?? 0,
+                    manuscript_target: cloudData.manuscript_target ?? 24,
+                    manuscript_deadline: cloudData.manuscript_deadline ?? '',
+                    manuscript_memo: cloudData.manuscript_memo ?? '',
+                    processes: cloudData.processes ?? {},
+                    trackers: cloudData.trackers ?? {},
+                    day_memos_remipan: cloudData.day_memos_remipan ?? {},
+                    day_memos_yukun: cloudData.day_memos_yukun ?? {},
+                    day_images_remipan: cloudData.day_images_remipan ?? {},
+                    day_images_yukun: cloudData.day_images_yukun ?? {},
+                    ideas: cloudData.ideas ?? [],
+                    inputs: cloudData.inputs ?? []
+                };
 
-                appData = cloudData;
-                if (!appData.processes) appData.processes = {};
-                if (!appData.trackers) appData.trackers = {};
-                if (!appData.day_memos_remipan) appData.day_memos_remipan = {};
-                if (!appData.day_memos_yukun) appData.day_memos_yukun = {};
-                if (!appData.day_images_remipan) appData.day_images_remipan = {};
-                if (!appData.day_images_yukun) appData.day_images_yukun = {};
-                if (!appData.ideas) appData.ideas = [];
-                if (!appData.inputs) appData.inputs = [];
-
-                if (appData.ideas.length > 0 && activeIdeaId === null) {
+                if (appData.ideas.length > 0 && (activeIdeaId === null || !appData.ideas.some(i => i.id === activeIdeaId))) {
                     activeIdeaId = appData.ideas[0].id;
+                } else if (appData.ideas.length === 0) {
+                    activeIdeaId = null;
                 }
-                if (appData.inputs.length > 0 && activeInputId === null) {
+
+                if (appData.inputs.length > 0 && (activeInputId === null || !appData.inputs.some(i => i.id === activeInputId))) {
                     activeInputId = appData.inputs[0].id;
+                } else if (appData.inputs.length === 0) {
+                    activeInputId = null;
                 }
 
                 updateUI();
@@ -810,27 +785,26 @@
     }
 
     function updateUI() {
-        // 入力フォーム編集中にフォーカスが外れるのを防ぐため、値が違う場合のみ反映
         const currPageInput = document.getElementById('current-page');
         if (currPageInput && document.activeElement !== currPageInput) {
-            currPageInput.value = appData.manuscript_current ?? 0;
+            currPageInput.value = appData.manuscript_current;
         }
         const targPageInput = document.getElementById('target-page');
         if (targPageInput && document.activeElement !== targPageInput) {
-            targPageInput.value = appData.manuscript_target ?? 24;
+            targPageInput.value = appData.manuscript_target;
         }
         const deadlineInput = document.getElementById('deadline-date');
         if (deadlineInput && document.activeElement !== deadlineInput) {
-            deadlineInput.value = appData.manuscript_deadline ?? '';
+            deadlineInput.value = appData.manuscript_deadline;
         }
         const memoInput = document.getElementById('manuscript-memo');
         if (memoInput && document.activeElement !== memoInput) {
-            memoInput.value = appData.manuscript_memo ?? '';
+            memoInput.value = appData.manuscript_memo;
         }
 
-        renderManuscript(appData.manuscript_current ?? 0, appData.manuscript_target ?? 24);
+        renderManuscript(appData.manuscript_current, appData.manuscript_target);
         renderProcesses();
-        updateCountdown(appData.manuscript_deadline ?? '');
+        updateCountdown(appData.manuscript_deadline);
         renderCalendar();
         updateSelectedDayView();
         renderIdeasManager();
@@ -838,11 +812,11 @@
     }
 
     window.updateManuscript = async function() {
-        await fetchLatestAndRun(async () => {
-            appData.manuscript_current = parseInt(document.getElementById('current-page').value) || 0;
-            appData.manuscript_target = parseInt(document.getElementById('target-page').value) || 1;
-            renderManuscript(appData.manuscript_current, appData.manuscript_target);
-            await saveDataToCloud();
+        const curr = parseInt(document.getElementById('current-page').value) || 0;
+        const targ = parseInt(document.getElementById('target-page').value) || 1;
+        await updateCloudData(data => {
+            data.manuscript_current = curr;
+            data.manuscript_target = targ;
         });
     }
 
@@ -884,30 +858,22 @@
             container.appendChild(row);
 
             row.querySelector(`#proc-btn-${index}`).onclick = async () => {
-                await fetchLatestAndRun(async () => {
-                    const curr = parseInt(document.getElementById(`proc-curr-input-${index}`).value) || 0;
-                    const targ = parseInt(document.getElementById(`proc-targ-input-${index}`).value) || 1;
-                    appData.processes[index] = { current: curr, target: targ };
-                    
-                    const per = Math.min(Math.floor((curr / targ) * 100), 100);
-                    const bar = document.getElementById(`proc-bar-${index}`);
-                    bar.max = targ;
-                    bar.value = curr;
-                    document.getElementById(`proc-text-${index}`).textContent = `${curr} / ${targ} ページ (${per}%)`;
-                    
-                    await saveDataToCloud();
+                const curr = parseInt(document.getElementById(`proc-curr-input-${index}`).value) || 0;
+                const targ = parseInt(document.getElementById(`proc-targ-input-${index}`).value) || 1;
+                await updateCloudData(data => {
+                    if (!data.processes) data.processes = {};
+                    data.processes[index] = { current: curr, target: targ };
                 });
             };
         });
     }
 
     window.saveManuscriptMeta = async function() {
-        await fetchLatestAndRun(async () => {
-            appData.manuscript_deadline = document.getElementById('deadline-date').value;
-            appData.manuscript_memo = document.getElementById('manuscript-memo').value;
-            updateCountdown(appData.manuscript_deadline);
-            renderCalendar();
-            await saveDataToCloud();
+        const deadline = document.getElementById('deadline-date').value;
+        const memo = document.getElementById('manuscript-memo').value;
+        await updateCloudData(data => {
+            data.manuscript_deadline = deadline;
+            data.manuscript_memo = memo;
         });
     }
 
@@ -1056,7 +1022,7 @@
             grid.appendChild(cell);
         }
 
-        document.getElementById('exercise-summary').textContent = `今月の運動達成日数: ${exerciseCount}日`;
+        document.getElementById('exercise-summary').textContent = `今月の運動達成日数: ${exerciseCount}日数`;
     }
 
     function updateSelectedDayView() {
@@ -1130,38 +1096,40 @@
     }
 
     window.saveDayMemoAndClose = async function(type) {
-        await fetchLatestAndRun(async () => {
-            const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        const memoVal = type === 'remipan' ? document.getElementById('selected-day-memo-remipan').value : document.getElementById('selected-day-memo-yukun').value;
+        const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        
+        await updateCloudData(data => {
             if (type === 'remipan') {
-                appData.day_memos_remipan[memoKey] = document.getElementById('selected-day-memo-remipan').value;
+                if (!data.day_memos_remipan) data.day_memos_remipan = {};
+                data.day_memos_remipan[memoKey] = memoVal;
                 isRemipanEditing = false;
             } else {
-                appData.day_memos_yukun[memoKey] = document.getElementById('selected-day-memo-yukun').value;
+                if (!data.day_memos_yukun) data.day_memos_yukun = {};
+                data.day_memos_yukun[memoKey] = memoVal;
                 isYukunEditing = false;
             }
-            await saveDataToCloud();
-            updateSelectedDayView();
         });
+        updateSelectedDayView();
     }
 
     window.clearDayData = async function(type) {
         if (!confirm('この日のメモと画像をすべて削除しますか？')) return;
-        await fetchLatestAndRun(async () => {
-            const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-            const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
 
+        await updateCloudData(data => {
             if (type === 'remipan') {
-                delete appData.day_memos_remipan[memoKey];
-                delete appData.day_images_remipan[imgKey];
+                if (data.day_memos_remipan) delete data.day_memos_remipan[memoKey];
+                if (data.day_images_remipan) delete data.day_images_remipan[imgKey];
                 isRemipanEditing = false;
             } else {
-                delete appData.day_memos_yukun[memoKey];
-                delete appData.day_images_yukun[imgKey];
+                if (data.day_memos_yukun) delete data.day_memos_yukun[memoKey];
+                if (data.day_images_yukun) delete data.day_images_yukun[imgKey];
                 isYukunEditing = false;
             }
-            await saveDataToCloud();
-            updateSelectedDayView();
         });
+        updateSelectedDayView();
     }
 
     window.handleDayImageUpload = async function(type, inputElement) {
@@ -1171,25 +1139,25 @@
         const fileNames = Array.from(files).map(f => f.name).join(', ');
         document.getElementById(`${type}-file-name`).textContent = `選択中: ${fileNames}`;
 
-        await fetchLatestAndRun(async () => {
-            const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
-            const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
-            if (!targetObj[imgKey]) targetObj[imgKey] = [];
-
-            let processed = 0;
-            Array.from(files).forEach(file => {
+        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        
+        // FileReaderで読み込んでからトランザクションで安全に結合
+        const base64Promises = Array.from(files).map(file => {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onload = async function(e) {
-                    targetObj[imgKey].push(e.target.result);
-                    processed++;
-                    if (processed === files.length) {
-                        await saveDataToCloud();
-                    }
-                };
+                reader.onload = (e) => resolve(e.target.result);
                 reader.readAsDataURL(file);
             });
-            inputElement.value = '';
         });
+
+        const newImages = await Promise.all(base64Promises);
+
+        await updateCloudData(data => {
+            const targetObj = (type === 'remipan') ? (data.day_images_remipan = data.day_images_remipan || {}) : (data.day_images_yukun = data.day_images_yukun || {});
+            if (!targetObj[imgKey]) targetObj[imgKey] = [];
+            targetObj[imgKey].push(...newImages);
+        });
+        inputElement.value = '';
     }
 
     function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
@@ -1203,24 +1171,22 @@
 
         btn.onclick = async (e) => {
             e.stopPropagation();
-            await fetchLatestAndRun(async () => {
-                let currentStatus = appData.trackers[storageKey] || 'none';
-                let nextStatus = currentStatus === 'none' ? 'maru' : (currentStatus === 'maru' ? 'batsu' : 'none');
-
-                appData.trackers[storageKey] = nextStatus;
-                updateButtonState(btn, nextStatus);
-                renderCalendar();
-                await saveDataToCloud();
-
-                if (nextStatus === 'maru') {
-                    const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
-                    const title = encodeURIComponent(`[実績] ${typeName}完了`);
-                    const details = encodeURIComponent(`${year}年${month}月${day}日 ${typeName}を達成しました！`);
-                    if (confirm(`${year}年${month}月${day}日の「${typeName}達成」をGoogleカレンダーに登録しますか？`)) {
-                        window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`, '_blank');
-                    }
-                }
+            let nextStatus = 'none';
+            await updateCloudData(data => {
+                if (!data.trackers) data.trackers = {};
+                let currentStatus = data.trackers[storageKey] || 'none';
+                nextStatus = currentStatus === 'none' ? 'maru' : (currentStatus === 'maru' ? 'batsu' : 'none');
+                data.trackers[storageKey] = nextStatus;
             });
+
+            if (nextStatus === 'maru') {
+                const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
+                const title = encodeURIComponent(`[実績] ${typeName}完了`);
+                const details = encodeURIComponent(`${year}年${month}月${day}日 ${typeName}を達成しました！`);
+                if (confirm(`${year}年${month}月${day}日の「${typeName}達成」をGoogleカレンダーに登録しますか？`)) {
+                    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`, '_blank');
+                }
+            }
         };
         row.appendChild(btn);
         return row;
@@ -1240,27 +1206,27 @@
     }
 
     // ==========================================
-    // 【ネタ帳管理ロジック】
+    // 【ネタ帳管理ロジック（トランザクション対応）】
     // ==========================================
     window.addIdeaItem = async function() {
-        await fetchLatestAndRun(async () => {
-            const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [], isEditing: true };
-            appData.ideas.push(newItem);
-            activeIdeaId = newItem.id;
-            renderIdeasManager();
-            await saveDataToCloud();
+        const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [], isEditing: true };
+        await updateCloudData(data => {
+            if (!data.ideas) data.ideas = [];
+            data.ideas.push(newItem);
         });
+        activeIdeaId = newItem.id;
+        renderIdeasManager();
     }
 
     window.deleteIdeaItem = async function(id) {
-        await fetchLatestAndRun(async () => {
-            appData.ideas = appData.ideas.filter(i => i.id !== id);
-            if (activeIdeaId === id) {
-                activeIdeaId = appData.ideas.length > 0 ? appData.ideas[0].id : null;
-            }
-            renderIdeasManager();
-            await saveDataToCloud();
+        await updateCloudData(data => {
+            if (!data.ideas) data.ideas = [];
+            data.ideas = data.ideas.filter(i => i.id !== id);
         });
+        if (activeIdeaId === id) {
+            activeIdeaId = appData.ideas.length > 0 ? appData.ideas[0].id : null;
+        }
+        renderIdeasManager();
     }
 
     window.selectIdea = function(id) {
@@ -1277,17 +1243,22 @@
     }
 
     window.saveIdeaEdit = async function(id) {
-        await fetchLatestAndRun(async () => {
-            const item = appData.ideas.find(i => i.id === id);
+        const titleVal = document.getElementById(`idea-title-input-${id}`).value;
+        const contentVal = document.getElementById(`idea-content-input-${id}`).value;
+
+        await updateCloudData(data => {
+            if (!data.ideas) data.ideas = [];
+            const item = data.ideas.find(i => i.id === id);
             if (item) {
-                item.title = document.getElementById(`idea-title-input-${id}`).value;
-                item.content = document.getElementById(`idea-content-input-${id}`).value;
-                item.isEditing = false;
-                renderIdeaSidebar();
-                renderIdeasDetail();
-                await saveDataToCloud();
+                item.title = titleVal;
+                item.content = contentVal;
             }
         });
+
+        const localItem = appData.ideas.find(i => i.id === id);
+        if (localItem) localItem.isEditing = false;
+        renderIdeaSidebar();
+        renderIdeasDetail();
     }
 
     window.handleIdeaImageUpload = async function(id, inputElement) {
@@ -1298,37 +1269,36 @@
         const fileNameEl = document.getElementById(`idea-file-name-${id}`);
         if (fileNameEl) fileNameEl.textContent = `選択中: ${fileNames}`;
 
-        await fetchLatestAndRun(async () => {
-            const item = appData.ideas.find(i => i.id === id);
-            if (!item) return;
-            if (!item.images) item.images = [];
-
-            let processed = 0;
-            Array.from(files).forEach(file => {
+        const base64Promises = Array.from(files).map(file => {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onload = async function(e) {
-                    item.images.push(e.target.result);
-                    processed++;
-                    if (processed === files.length) {
-                        renderIdeasDetail();
-                        await saveDataToCloud();
-                    }
-                };
+                reader.onload = (e) => resolve(e.target.result);
                 reader.readAsDataURL(file);
             });
-            inputElement.value = '';
         });
+
+        const newImages = await Promise.all(base64Promises);
+
+        await updateCloudData(data => {
+            if (!data.ideas) data.ideas = [];
+            const item = data.ideas.find(i => i.id === id);
+            if (item) {
+                if (!item.images) item.images = [];
+                item.images.push(...newImages);
+            }
+        });
+        inputElement.value = '';
     }
 
     window.deleteIdeaImage = async function(itemId, imgIndex) {
-        await fetchLatestAndRun(async () => {
-            const item = appData.ideas.find(i => i.id === itemId);
+        await updateCloudData(data => {
+            if (!data.ideas) data.ideas = [];
+            const item = data.ideas.find(i => i.id === itemId);
             if (item && item.images) {
                 item.images.splice(imgIndex, 1);
-                renderIdeasDetail();
-                await saveDataToCloud();
             }
         });
+        renderIdeasDetail();
     }
 
     function renderIdeasManager() {
@@ -1416,27 +1386,27 @@
     }
 
     // ==========================================
-    // 【インプット情報管理ロジック】
+    // 【インプット情報管理ロジック（トランザクション対応）】
     // ==========================================
     window.addInputItem = async function() {
-        await fetchLatestAndRun(async () => {
-            const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [], isEditing: true };
-            appData.inputs.push(newItem);
-            activeInputId = newItem.id;
-            renderInputsManager();
-            await saveDataToCloud();
+        const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [], isEditing: true };
+        await updateCloudData(data => {
+            if (!data.inputs) data.inputs = [];
+            data.inputs.push(newItem);
         });
+        activeInputId = newItem.id;
+        renderInputsManager();
     }
 
     window.deleteInputItem = async function(id) {
-        await fetchLatestAndRun(async () => {
-            appData.inputs = appData.inputs.filter(i => i.id !== id);
-            if (activeInputId === id) {
-                activeInputId = appData.inputs.length > 0 ? appData.inputs[0].id : null;
-            }
-            renderInputsManager();
-            await saveDataToCloud();
+        await updateCloudData(data => {
+            if (!data.inputs) data.inputs = [];
+            data.inputs = data.inputs.filter(i => i.id !== id);
         });
+        if (activeInputId === id) {
+            activeInputId = appData.inputs.length > 0 ? appData.inputs[0].id : null;
+        }
+        renderInputsManager();
     }
 
     window.selectInput = function(id) {
@@ -1453,18 +1423,24 @@
     }
 
     window.saveInputEdit = async function(id) {
-        await fetchLatestAndRun(async () => {
-            const item = appData.inputs.find(i => i.id === id);
+        const titleVal = document.getElementById(`input-title-input-${id}`).value;
+        const linkVal = document.getElementById(`input-link-input-${id}`).value;
+        const contentVal = document.getElementById(`input-content-input-${id}`).value;
+
+        await updateCloudData(data => {
+            if (!data.inputs) data.inputs = [];
+            const item = data.inputs.find(i => i.id === id);
             if (item) {
-                item.title = document.getElementById(`input-title-input-${id}`).value;
-                item.link = document.getElementById(`input-link-input-${id}`).value;
-                item.content = document.getElementById(`input-content-input-${id}`).value;
-                item.isEditing = false;
-                renderInputSidebar();
-                renderInputsDetail();
-                await saveDataToCloud();
+                item.title = titleVal;
+                item.link = linkVal;
+                item.content = contentVal;
             }
         });
+
+        const localItem = appData.inputs.find(i => i.id === id);
+        if (localItem) localItem.isEditing = false;
+        renderInputSidebar();
+        renderInputsDetail();
     }
 
     window.handleInputImageUpload = async function(id, inputElement) {
@@ -1475,37 +1451,36 @@
         const fileNameEl = document.getElementById(`input-file-name-${id}`);
         if (fileNameEl) fileNameEl.textContent = `選択中: ${fileNames}`;
 
-        await fetchLatestAndRun(async () => {
-            const item = appData.inputs.find(i => i.id === id);
-            if (!item) return;
-            if (!item.images) item.images = [];
-
-            let processed = 0;
-            Array.from(files).forEach(file => {
+        const base64Promises = Array.from(files).map(file => {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onload = async function(e) {
-                    item.images.push(e.target.result);
-                    processed++;
-                    if (processed === files.length) {
-                        renderInputsDetail();
-                        await saveDataToCloud();
-                    }
-                };
+                reader.onload = (e) => resolve(e.target.result);
                 reader.readAsDataURL(file);
             });
-            inputElement.value = '';
         });
+
+        const newImages = await Promise.all(base64Promises);
+
+        await updateCloudData(data => {
+            if (!data.inputs) data.inputs = [];
+            const item = data.inputs.find(i => i.id === id);
+            if (item) {
+                if (!item.images) item.images = [];
+                item.images.push(...newImages);
+            }
+        });
+        inputElement.value = '';
     }
 
     window.deleteInputImage = async function(itemId, imgIndex) {
-        await fetchLatestAndRun(async () => {
-            const item = appData.inputs.find(i => i.id === itemId);
+        await updateCloudData(data => {
+            if (!data.inputs) data.inputs = [];
+            const item = data.inputs.find(i => i.id === itemId);
             if (item && item.images) {
                 item.images.splice(imgIndex, 1);
-                renderInputsDetail();
-                await saveDataToCloud();
             }
         });
+        renderInputsDetail();
     }
 
     function renderInputsManager() {
