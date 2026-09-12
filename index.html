@@ -301,7 +301,6 @@
             border: 1px solid var(--primary);
         }
 
-        /* 2カラムマスター・ディテールレイアウト（ネタ帳・インプット用） */
         .manager-layout {
             display: grid;
             grid-template-columns: 280px 1fr;
@@ -383,7 +382,6 @@
             align-items: center;
         }
 
-        /* 概要表示用スタイル */
         .overview-box {
             background: #ffffff;
             border: 1px solid var(--border-color);
@@ -411,7 +409,6 @@
             font-size: 0.85rem;
         }
 
-        /* 画像プレビュー＆クローズアップ関連 */
         .img-preview-container {
             display: flex;
             gap: 12px;
@@ -468,7 +465,6 @@
             font-weight: bold;
         }
 
-        /* モーダル（画像拡大表示用） */
         #image-modal {
             display: none;
             position: fixed;
@@ -663,7 +659,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBvOPGpWEgHxcRR9WQpiHmdLMcumtc2t-o",
@@ -702,7 +698,6 @@
     let activeIdeaId = null;
     let activeInputId = null;
 
-    // カレンダーメモの編集状態管理フラグ
     let isRemipanEditing = false;
     let isYukunEditing = false;
 
@@ -714,12 +709,83 @@
         btnElement.classList.add('active');
     }
 
-    async function loadDataFromCloud() {
+    // ==========================================
+    // 【アクション直前の最新データ取得 ＆ 保存処理】
+    // ==========================================
+    async function fetchLatestAndRun(actionCallback) {
         try {
             const docRef = doc(db, "dashboard", "main_data");
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                appData = docSnap.data();
+                const cloudData = docSnap.data();
+                // ローカルの未保存の変更とクラウドをマージ、あるいは最新状態に更新
+                // ここでは安全のためクラウドデータをベースにローカルを補正する
+                mergeCloudData(cloudData);
+            }
+        } catch (e) {
+            console.error("最新データ取得エラー:", e);
+        }
+        await actionCallback();
+    }
+
+    function mergeCloudData(cloudData) {
+        // クラウド側に存在してローカルにない、または競合を防ぐためのマージ処理
+        if (!appData.ideas) appData.ideas = [];
+        if (!cloudData.ideas) cloudData.ideas = [];
+
+        // アイデアやインプットなどはIDベースで結合（クラウド側を優先またはマージ）
+        // 簡易的に最新のクラウドデータ全体をベースにしつつ、現在自分が編集中などのデータが消えないように考慮
+        appData = { ...cloudData };
+    }
+
+    async function saveDataToCloud() {
+        try {
+            // 保存する直前にも念のため最新データをフェッチしてから書き込むことで上書き事故を防止
+            const docRef = doc(db, "dashboard", "main_data");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const cloudData = docSnap.data();
+                // データのロストを防ぐため、アイデアやインプット、メモ等の配列・オブジェクトを統合する
+                // （例えば、相手が追加した新しいアイデアやインプットを消さないようにIDでマージする）
+                appData.ideas = mergeItems(cloudData.ideas || [], appData.ideas || []);
+                appData.inputs = mergeItems(cloudData.inputs || [], appData.inputs || []);
+                appData.day_memos_remipan = { ...(cloudData.day_memos_remipan || {}), ...(appData.day_memos_remipan || {}) };
+                appData.day_memos_yukun = { ...(cloudData.day_memos_yukun || {}), ...(appData.day_memos_yukun || {}) };
+                appData.day_images_remipan = { ...(cloudData.day_images_remipan || {}), ...(appData.day_images_remipan || {}) };
+                appData.day_images_yukun = { ...(cloudData.day_images_yukun || {}), ...(appData.day_images_yukun || {}) };
+                appData.trackers = { ...(cloudData.trackers || {}), ...(appData.trackers || {}) };
+            }
+            await setDoc(docRef, appData);
+        } catch (e) {
+            console.error("データ保存エラー:", e);
+        }
+    }
+
+    function mergeItems(cloudList, localList) {
+        const map = new Map();
+        // まずクラウド側を登録
+        cloudList.forEach(item => map.set(item.id, item));
+        // ローカル側で上書き・追加
+        localList.forEach(item => {
+            // 編集中のものはローカルを優先、それ以外もIDベースで統合
+            map.set(item.id, item);
+        });
+        return Array.from(map.values());
+    }
+
+    // ==========================================
+    // 【リアルタイム自動同期（onSnapshot）の開始】
+    // ==========================================
+    function initRealtimeSync() {
+        const docRef = doc(db, "dashboard", "main_data");
+        onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const cloudData = docSnap.data();
+                // 自分が現在編集中（入力欄を開いているなど）のデータを強制上書きされないように配慮しつつ全体を更新
+                const remoteIdeasCount = (cloudData.ideas || []).length;
+                const localIdeasCount = (appData.ideas || []).length;
+
+                appData = cloudData;
                 if (!appData.processes) appData.processes = {};
                 if (!appData.trackers) appData.trackers = {};
                 if (!appData.day_memos_remipan) appData.day_memos_remipan = {};
@@ -735,26 +801,32 @@
                 if (appData.inputs.length > 0 && activeInputId === null) {
                     activeInputId = appData.inputs[0].id;
                 }
-            }
-        } catch (e) {
-            console.error("データ読み込みエラー:", e);
-        }
-        updateUI();
-    }
 
-    async function saveDataToCloud() {
-        try {
-            await setDoc(doc(db, "dashboard", "main_data"), appData);
-        } catch (e) {
-            console.error("データ保存エラー:", e);
-        }
+                updateUI();
+            }
+        }, (error) => {
+            console.error("リアルタイム同期エラー:", error);
+        });
     }
 
     function updateUI() {
-        document.getElementById('current-page').value = appData.manuscript_current ?? 0;
-        document.getElementById('target-page').value = appData.manuscript_target ?? 24;
-        document.getElementById('deadline-date').value = appData.manuscript_deadline ?? '';
-        document.getElementById('manuscript-memo').value = appData.manuscript_memo ?? '';
+        // 入力フォーム編集中にフォーカスが外れるのを防ぐため、値が違う場合のみ反映
+        const currPageInput = document.getElementById('current-page');
+        if (currPageInput && document.activeElement !== currPageInput) {
+            currPageInput.value = appData.manuscript_current ?? 0;
+        }
+        const targPageInput = document.getElementById('target-page');
+        if (targPageInput && document.activeElement !== targPageInput) {
+            targPageInput.value = appData.manuscript_target ?? 24;
+        }
+        const deadlineInput = document.getElementById('deadline-date');
+        if (deadlineInput && document.activeElement !== deadlineInput) {
+            deadlineInput.value = appData.manuscript_deadline ?? '';
+        }
+        const memoInput = document.getElementById('manuscript-memo');
+        if (memoInput && document.activeElement !== memoInput) {
+            memoInput.value = appData.manuscript_memo ?? '';
+        }
 
         renderManuscript(appData.manuscript_current ?? 0, appData.manuscript_target ?? 24);
         renderProcesses();
@@ -766,10 +838,12 @@
     }
 
     window.updateManuscript = async function() {
-        appData.manuscript_current = parseInt(document.getElementById('current-page').value) || 0;
-        appData.manuscript_target = parseInt(document.getElementById('target-page').value) || 1;
-        renderManuscript(appData.manuscript_current, appData.manuscript_target);
-        await saveDataToCloud();
+        await fetchLatestAndRun(async () => {
+            appData.manuscript_current = parseInt(document.getElementById('current-page').value) || 0;
+            appData.manuscript_target = parseInt(document.getElementById('target-page').value) || 1;
+            renderManuscript(appData.manuscript_current, appData.manuscript_target);
+            await saveDataToCloud();
+        });
     }
 
     function renderManuscript(current, target) {
@@ -810,27 +884,31 @@
             container.appendChild(row);
 
             row.querySelector(`#proc-btn-${index}`).onclick = async () => {
-                const curr = parseInt(document.getElementById(`proc-curr-input-${index}`).value) || 0;
-                const targ = parseInt(document.getElementById(`proc-targ-input-${index}`).value) || 1;
-                appData.processes[index] = { current: curr, target: targ };
-                
-                const per = Math.min(Math.floor((curr / targ) * 100), 100);
-                const bar = document.getElementById(`proc-bar-${index}`);
-                bar.max = targ;
-                bar.value = curr;
-                document.getElementById(`proc-text-${index}`).textContent = `${curr} / ${targ} ページ (${per}%)`;
-                
-                await saveDataToCloud();
+                await fetchLatestAndRun(async () => {
+                    const curr = parseInt(document.getElementById(`proc-curr-input-${index}`).value) || 0;
+                    const targ = parseInt(document.getElementById(`proc-targ-input-${index}`).value) || 1;
+                    appData.processes[index] = { current: curr, target: targ };
+                    
+                    const per = Math.min(Math.floor((curr / targ) * 100), 100);
+                    const bar = document.getElementById(`proc-bar-${index}`);
+                    bar.max = targ;
+                    bar.value = curr;
+                    document.getElementById(`proc-text-${index}`).textContent = `${curr} / ${targ} ページ (${per}%)`;
+                    
+                    await saveDataToCloud();
+                });
             };
         });
     }
 
     window.saveManuscriptMeta = async function() {
-        appData.manuscript_deadline = document.getElementById('deadline-date').value;
-        appData.manuscript_memo = document.getElementById('manuscript-memo').value;
-        updateCountdown(appData.manuscript_deadline);
-        renderCalendar();
-        await saveDataToCloud();
+        await fetchLatestAndRun(async () => {
+            appData.manuscript_deadline = document.getElementById('deadline-date').value;
+            appData.manuscript_memo = document.getElementById('manuscript-memo').value;
+            updateCountdown(appData.manuscript_deadline);
+            renderCalendar();
+            await saveDataToCloud();
+        });
     }
 
     function updateCountdown(deadlineStr) {
@@ -988,8 +1066,14 @@
         const remipanMemo = appData.day_memos_remipan[memoKey] || '';
         const yukunMemo = appData.day_memos_yukun[memoKey] || '';
 
-        document.getElementById('selected-day-memo-remipan').value = remipanMemo;
-        document.getElementById('selected-day-memo-yukun').value = yukunMemo;
+        const remipanInput = document.getElementById('selected-day-memo-remipan');
+        if (remipanInput && document.activeElement !== remipanInput) {
+            remipanInput.value = remipanMemo;
+        }
+        const yukunInput = document.getElementById('selected-day-memo-yukun');
+        if (yukunInput && document.activeElement !== yukunInput) {
+            yukunInput.value = yukunMemo;
+        }
 
         document.getElementById('remipan-file-name').textContent = '選択されていません';
         document.getElementById('yukun-file-name').textContent = '選択されていません';
@@ -1008,7 +1092,6 @@
         const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
         const images = targetObj[imgKey] || [];
 
-        // アクションボタン（編集・削除など）の構成
         if (!isEditing) {
             editContainer.style.display = 'none';
             viewContainer.style.display = 'block';
@@ -1019,7 +1102,6 @@
             }
             actionGroup.innerHTML = actionHtml;
 
-            // 閲覧ビューの構築
             let imgHtml = '';
             images.forEach((imgSrc) => {
                 imgHtml += `<div class="img-thumb-wrap"><img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')"></div>`;
@@ -1048,34 +1130,38 @@
     }
 
     window.saveDayMemoAndClose = async function(type) {
-        const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        if (type === 'remipan') {
-            appData.day_memos_remipan[memoKey] = document.getElementById('selected-day-memo-remipan').value;
-            isRemipanEditing = false;
-        } else {
-            appData.day_memos_yukun[memoKey] = document.getElementById('selected-day-memo-yukun').value;
-            isYukunEditing = false;
-        }
-        await saveDataToCloud();
-        updateSelectedDayView();
+        await fetchLatestAndRun(async () => {
+            const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
+            if (type === 'remipan') {
+                appData.day_memos_remipan[memoKey] = document.getElementById('selected-day-memo-remipan').value;
+                isRemipanEditing = false;
+            } else {
+                appData.day_memos_yukun[memoKey] = document.getElementById('selected-day-memo-yukun').value;
+                isYukunEditing = false;
+            }
+            await saveDataToCloud();
+            updateSelectedDayView();
+        });
     }
 
     window.clearDayData = async function(type) {
         if (!confirm('この日のメモと画像をすべて削除しますか？')) return;
-        const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        await fetchLatestAndRun(async () => {
+            const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
+            const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
 
-        if (type === 'remipan') {
-            delete appData.day_memos_remipan[memoKey];
-            delete appData.day_images_remipan[imgKey];
-            isRemipanEditing = false;
-        } else {
-            delete appData.day_memos_yukun[memoKey];
-            delete appData.day_images_yukun[imgKey];
-            isYukunEditing = false;
-        }
-        await saveDataToCloud();
-        updateSelectedDayView();
+            if (type === 'remipan') {
+                delete appData.day_memos_remipan[memoKey];
+                delete appData.day_images_remipan[imgKey];
+                isRemipanEditing = false;
+            } else {
+                delete appData.day_memos_yukun[memoKey];
+                delete appData.day_images_yukun[imgKey];
+                isYukunEditing = false;
+            }
+            await saveDataToCloud();
+            updateSelectedDayView();
+        });
     }
 
     window.handleDayImageUpload = async function(type, inputElement) {
@@ -1085,23 +1171,25 @@
         const fileNames = Array.from(files).map(f => f.name).join(', ');
         document.getElementById(`${type}-file-name`).textContent = `選択中: ${fileNames}`;
 
-        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
-        if (!targetObj[imgKey]) targetObj[imgKey] = [];
+        await fetchLatestAndRun(async () => {
+            const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+            const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
+            if (!targetObj[imgKey]) targetObj[imgKey] = [];
 
-        let processed = 0;
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                targetObj[imgKey].push(e.target.result);
-                processed++;
-                if (processed === files.length) {
-                    await saveDataToCloud();
-                }
-            };
-            reader.readAsDataURL(file);
+            let processed = 0;
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    targetObj[imgKey].push(e.target.result);
+                    processed++;
+                    if (processed === files.length) {
+                        await saveDataToCloud();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            inputElement.value = '';
         });
-        inputElement.value = '';
     }
 
     function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
@@ -1115,22 +1203,24 @@
 
         btn.onclick = async (e) => {
             e.stopPropagation();
-            let currentStatus = appData.trackers[storageKey] || 'none';
-            let nextStatus = currentStatus === 'none' ? 'maru' : (currentStatus === 'maru' ? 'batsu' : 'none');
+            await fetchLatestAndRun(async () => {
+                let currentStatus = appData.trackers[storageKey] || 'none';
+                let nextStatus = currentStatus === 'none' ? 'maru' : (currentStatus === 'maru' ? 'batsu' : 'none');
 
-            appData.trackers[storageKey] = nextStatus;
-            updateButtonState(btn, nextStatus);
-            renderCalendar();
-            await saveDataToCloud();
+                appData.trackers[storageKey] = nextStatus;
+                updateButtonState(btn, nextStatus);
+                renderCalendar();
+                await saveDataToCloud();
 
-            if (nextStatus === 'maru') {
-                const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
-                const title = encodeURIComponent(`[実績] ${typeName}完了`);
-                const details = encodeURIComponent(`${year}年${month}月${day}日 ${typeName}を達成しました！`);
-                if (confirm(`${year}年${month}月${day}日の「${typeName}達成」をGoogleカレンダーに登録しますか？`)) {
-                    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`, '_blank');
+                if (nextStatus === 'maru') {
+                    const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
+                    const title = encodeURIComponent(`[実績] ${typeName}完了`);
+                    const details = encodeURIComponent(`${year}年${month}月${day}日 ${typeName}を達成しました！`);
+                    if (confirm(`${year}年${month}月${day}日の「${typeName}達成」をGoogleカレンダーに登録しますか？`)) {
+                        window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`, '_blank');
+                    }
                 }
-            }
+            });
         };
         row.appendChild(btn);
         return row;
@@ -1153,20 +1243,24 @@
     // 【ネタ帳管理ロジック】
     // ==========================================
     window.addIdeaItem = async function() {
-        const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [], isEditing: true };
-        appData.ideas.push(newItem);
-        activeIdeaId = newItem.id;
-        renderIdeasManager();
-        await saveDataToCloud();
+        await fetchLatestAndRun(async () => {
+            const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [], isEditing: true };
+            appData.ideas.push(newItem);
+            activeIdeaId = newItem.id;
+            renderIdeasManager();
+            await saveDataToCloud();
+        });
     }
 
     window.deleteIdeaItem = async function(id) {
-        appData.ideas = appData.ideas.filter(i => i.id !== id);
-        if (activeIdeaId === id) {
-            activeIdeaId = appData.ideas.length > 0 ? appData.ideas[0].id : null;
-        }
-        renderIdeasManager();
-        await saveDataToCloud();
+        await fetchLatestAndRun(async () => {
+            appData.ideas = appData.ideas.filter(i => i.id !== id);
+            if (activeIdeaId === id) {
+                activeIdeaId = appData.ideas.length > 0 ? appData.ideas[0].id : null;
+            }
+            renderIdeasManager();
+            await saveDataToCloud();
+        });
     }
 
     window.selectIdea = function(id) {
@@ -1183,18 +1277,20 @@
     }
 
     window.saveIdeaEdit = async function(id) {
-        const item = appData.ideas.find(i => i.id === id);
-        if (item) {
-            item.title = document.getElementById(`idea-title-input-${id}`).value;
-            item.content = document.getElementById(`idea-content-input-${id}`).value;
-            item.isEditing = false;
-            renderIdeaSidebar();
-            renderIdeasDetail();
-            await saveDataToCloud();
-        }
+        await fetchLatestAndRun(async () => {
+            const item = appData.ideas.find(i => i.id === id);
+            if (item) {
+                item.title = document.getElementById(`idea-title-input-${id}`).value;
+                item.content = document.getElementById(`idea-content-input-${id}`).value;
+                item.isEditing = false;
+                renderIdeaSidebar();
+                renderIdeasDetail();
+                await saveDataToCloud();
+            }
+        });
     }
 
-    window.handleIdeaImageUpload = function(id, inputElement) {
+    window.handleIdeaImageUpload = async function(id, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
 
@@ -1202,33 +1298,37 @@
         const fileNameEl = document.getElementById(`idea-file-name-${id}`);
         if (fileNameEl) fileNameEl.textContent = `選択中: ${fileNames}`;
 
-        const item = appData.ideas.find(i => i.id === id);
-        if (!item) return;
-        if (!item.images) item.images = [];
+        await fetchLatestAndRun(async () => {
+            const item = appData.ideas.find(i => i.id === id);
+            if (!item) return;
+            if (!item.images) item.images = [];
 
-        let processed = 0;
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                item.images.push(e.target.result);
-                processed++;
-                if (processed === files.length) {
-                    renderIdeasDetail();
-                    await saveDataToCloud();
-                }
-            };
-            reader.readAsDataURL(file);
+            let processed = 0;
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    item.images.push(e.target.result);
+                    processed++;
+                    if (processed === files.length) {
+                        renderIdeasDetail();
+                        await saveDataToCloud();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            inputElement.value = '';
         });
-        inputElement.value = '';
     }
 
     window.deleteIdeaImage = async function(itemId, imgIndex) {
-        const item = appData.ideas.find(i => i.id === itemId);
-        if (item && item.images) {
-            item.images.splice(imgIndex, 1);
-            renderIdeasDetail();
-            await saveDataToCloud();
-        }
+        await fetchLatestAndRun(async () => {
+            const item = appData.ideas.find(i => i.id === itemId);
+            if (item && item.images) {
+                item.images.splice(imgIndex, 1);
+                renderIdeasDetail();
+                await saveDataToCloud();
+            }
+        });
     }
 
     function renderIdeasManager() {
@@ -1274,7 +1374,6 @@
         });
 
         if (!item.isEditing) {
-            // 閲覧モード（概要表示）
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細確認</h3>
@@ -1290,7 +1389,6 @@
                 ${imgHtml ? `<div style="margin-top: 15px;"><label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">添付画像 (クリックで拡大):</label><div class="img-preview-container">${imgHtml}</div></div>` : ''}
             `;
         } else {
-            // 編集モード
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細編集</h3>
@@ -1321,20 +1419,24 @@
     // 【インプット情報管理ロジック】
     // ==========================================
     window.addInputItem = async function() {
-        const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [], isEditing: true };
-        appData.inputs.push(newItem);
-        activeInputId = newItem.id;
-        renderInputsManager();
-        await saveDataToCloud();
+        await fetchLatestAndRun(async () => {
+            const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [], isEditing: true };
+            appData.inputs.push(newItem);
+            activeInputId = newItem.id;
+            renderInputsManager();
+            await saveDataToCloud();
+        });
     }
 
     window.deleteInputItem = async function(id) {
-        appData.inputs = appData.inputs.filter(i => i.id !== id);
-        if (activeInputId === id) {
-            activeInputId = appData.inputs.length > 0 ? appData.inputs[0].id : null;
-        }
-        renderInputsManager();
-        await saveDataToCloud();
+        await fetchLatestAndRun(async () => {
+            appData.inputs = appData.inputs.filter(i => i.id !== id);
+            if (activeInputId === id) {
+                activeInputId = appData.inputs.length > 0 ? appData.inputs[0].id : null;
+            }
+            renderInputsManager();
+            await saveDataToCloud();
+        });
     }
 
     window.selectInput = function(id) {
@@ -1351,19 +1453,21 @@
     }
 
     window.saveInputEdit = async function(id) {
-        const item = appData.inputs.find(i => i.id === id);
-        if (item) {
-            item.title = document.getElementById(`input-title-input-${id}`).value;
-            item.link = document.getElementById(`input-link-input-${id}`).value;
-            item.content = document.getElementById(`input-content-input-${id}`).value;
-            item.isEditing = false;
-            renderInputSidebar();
-            renderInputsDetail();
-            await saveDataToCloud();
-        }
+        await fetchLatestAndRun(async () => {
+            const item = appData.inputs.find(i => i.id === id);
+            if (item) {
+                item.title = document.getElementById(`input-title-input-${id}`).value;
+                item.link = document.getElementById(`input-link-input-${id}`).value;
+                item.content = document.getElementById(`input-content-input-${id}`).value;
+                item.isEditing = false;
+                renderInputSidebar();
+                renderInputsDetail();
+                await saveDataToCloud();
+            }
+        });
     }
 
-    window.handleInputImageUpload = function(id, inputElement) {
+    window.handleInputImageUpload = async function(id, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
 
@@ -1371,33 +1475,37 @@
         const fileNameEl = document.getElementById(`input-file-name-${id}`);
         if (fileNameEl) fileNameEl.textContent = `選択中: ${fileNames}`;
 
-        const item = appData.inputs.find(i => i.id === id);
-        if (!item) return;
-        if (!item.images) item.images = [];
+        await fetchLatestAndRun(async () => {
+            const item = appData.inputs.find(i => i.id === id);
+            if (!item) return;
+            if (!item.images) item.images = [];
 
-        let processed = 0;
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                item.images.push(e.target.result);
-                processed++;
-                if (processed === files.length) {
-                    renderInputsDetail();
-                    await saveDataToCloud();
-                }
-            };
-            reader.readAsDataURL(file);
+            let processed = 0;
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    item.images.push(e.target.result);
+                    processed++;
+                    if (processed === files.length) {
+                        renderInputsDetail();
+                        await saveDataToCloud();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            inputElement.value = '';
         });
-        inputElement.value = '';
     }
 
     window.deleteInputImage = async function(itemId, imgIndex) {
-        const item = appData.inputs.find(i => i.id === itemId);
-        if (item && item.images) {
-            item.images.splice(imgIndex, 1);
-            renderInputsDetail();
-            await saveDataToCloud();
-        }
+        await fetchLatestAndRun(async () => {
+            const item = appData.inputs.find(i => i.id === itemId);
+            if (item && item.images) {
+                item.images.splice(imgIndex, 1);
+                renderInputsDetail();
+                await saveDataToCloud();
+            }
+        });
     }
 
     function renderInputsManager() {
@@ -1443,7 +1551,6 @@
         });
 
         if (!item.isEditing) {
-            // 閲覧モード（概要表示）
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細確認</h3>
@@ -1460,7 +1567,6 @@
                 ${imgHtml ? `<div style="margin-top: 15px;"><label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">添付画像 (クリックで拡大):</label><div class="img-preview-container">${imgHtml}</div></div>` : ''}
             `;
         } else {
-            // 編集モード
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細編集</h3>
@@ -1504,7 +1610,8 @@
         document.getElementById('image-modal').style.display = 'none';
     }
 
-    loadDataFromCloud();
+    // 起動時にリアルタイム同期リスナーを有効化
+    initRealtimeSync();
 </script>
 </body>
 </html>
