@@ -499,7 +499,7 @@
 <body>
 
 <div class="container">
-    <h1>制作 ＆ 運動 管理ダッシュボード（リアルタイムトランザクション同期）</h1>
+    <h1>制作 ＆ 運動 管理ダッシュボード（リアルタイム同期・進捗自動連動）</h1>
 
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・習慣</button>
@@ -542,10 +542,10 @@
                     <div id="remipan-edit-container" style="display: none;">
                         <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力..."></textarea>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可):</label>
-                            <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
+                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
+                            <input type="file" id="remipan-file-input" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
                             <div id="remipan-file-name" class="file-name-display">選択されていません</div>
-                            <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                            <div class="upload-note">※複数の画像をまとめて選択してアップロードできます</div>
                         </div>
                         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
                             <button onclick="saveDayMemoAndClose('remipan')">登録する</button>
@@ -565,10 +565,10 @@
                     <div id="yukun-edit-container" style="display: none;">
                         <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力..."></textarea>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可):</label>
-                            <input type="file" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
+                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
+                            <input type="file" id="yukun-file-input" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
                             <div id="yukun-file-name" class="file-name-display">選択されていません</div>
-                            <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                            <div class="upload-note">※複数の画像をまとめて選択してアップロードできます</div>
                         </div>
                         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
                             <button onclick="saveDayMemoAndClose('yukun')">登録する</button>
@@ -596,15 +596,14 @@
 
         <div class="card">
             <div class="section-header">
-                <h3 style="margin:0;">✍️ 全体原稿ページ進捗</h3>
+                <h3 style="margin:0;">✍️ 全体原稿ページ進捗（工程別進捗から自動連動）</h3>
                 <span id="manuscript-text">0 / 24 ページ (0%)</span>
             </div>
             <progress id="manuscript-bar" value="0" max="100" style="margin-top: 10px;"></progress>
             <div class="inputs">
-                <input type="number" id="current-page" placeholder="現在ページ" style="width: 100px;">
-                <span>/ 目標</span>
-                <input type="number" id="target-page" placeholder="目標ページ" style="width: 100px;" value="24">
-                <button onclick="updateManuscript()">進捗を保存</button>
+                <span>目標ページ数:</span>
+                <input type="number" id="target-page" placeholder="目標ページ" style="width: 100px;" value="24" onchange="updateManuscriptTarget()">
+                <span style="font-size: 0.8rem; color: #666; margin-left: 10px;">※「現在ページ」は下の工程別進捗の平均値から自動で計算・更新されます。</span>
             </div>
         </div>
 
@@ -691,6 +690,10 @@
         inputs: []
     };
 
+    // 編集状態を独立して保持するマップ（同期によるリセットを防止）
+    let ideaEditingMap = {};
+    let inputEditingMap = {};
+
     let selectedYear = new Date().getFullYear();
     let selectedMonth = new Date().getMonth() + 1;
     let selectedDay = new Date().getDate();
@@ -710,7 +713,7 @@
     }
 
     // ==========================================
-    // 【Firestore トランザクション処理（データ整合性・競合防止）】
+    // 【Firestore トランザクション処理】
     // ==========================================
     async function updateCloudData(updateLogic) {
         const docRef = doc(db, "dashboard", "main_data");
@@ -732,9 +735,7 @@
                     inputs: []
                 };
 
-                // コールバック内で最新のcloudDataを直接操作して変更を加える
                 updateLogic(cloudData);
-
                 transaction.set(docRef, cloudData);
             });
         } catch (e) {
@@ -743,7 +744,7 @@
     }
 
     // ==========================================
-    // 【リアルタイム自動同期（onSnapshot）の常時監視】
+    // 【リアルタイム自動同期（onSnapshot）】
     // ==========================================
     function initRealtimeSync() {
         const docRef = doc(db, "dashboard", "main_data");
@@ -785,10 +786,6 @@
     }
 
     function updateUI() {
-        const currPageInput = document.getElementById('current-page');
-        if (currPageInput && document.activeElement !== currPageInput) {
-            currPageInput.value = appData.manuscript_current;
-        }
         const targPageInput = document.getElementById('target-page');
         if (targPageInput && document.activeElement !== targPageInput) {
             targPageInput.value = appData.manuscript_target;
@@ -811,11 +808,9 @@
         renderInputsManager();
     }
 
-    window.updateManuscript = async function() {
-        const curr = parseInt(document.getElementById('current-page').value) || 0;
+    window.updateManuscriptTarget = async function() {
         const targ = parseInt(document.getElementById('target-page').value) || 1;
         await updateCloudData(data => {
-            data.manuscript_current = curr;
             data.manuscript_target = targ;
         });
     }
@@ -832,11 +827,14 @@
         const container = document.getElementById('process-list-container');
         container.innerHTML = '';
 
+        let totalCurrentSum = 0;
+
         processes.forEach((proc, index) => {
             if (!appData.processes[index]) {
-                appData.processes[index] = { current: 0, target: 24 };
+                appData.processes[index] = { current: 0, target: appData.manuscript_target };
             }
             const pData = appData.processes[index];
+            totalCurrentSum += pData.current;
             const percent = pData.target > 0 ? Math.min(Math.floor((pData.current / pData.target) * 100), 100) : 0;
 
             const row = document.createElement('div');
@@ -860,9 +858,17 @@
             row.querySelector(`#proc-btn-${index}`).onclick = async () => {
                 const curr = parseInt(document.getElementById(`proc-curr-input-${index}`).value) || 0;
                 const targ = parseInt(document.getElementById(`proc-targ-input-${index}`).value) || 1;
+                
                 await updateCloudData(data => {
                     if (!data.processes) data.processes = {};
                     data.processes[index] = { current: curr, target: targ };
+                    
+                    // 全体現在ページを全工程の平均値から自動計算して連動保存する
+                    let sum = 0;
+                    processes.forEach((_, idx) => {
+                        sum += (data.processes[idx] ? data.processes[idx].current : 0);
+                    });
+                    data.manuscript_current = Math.round(sum / processes.length);
                 });
             };
         });
@@ -902,8 +908,8 @@
     window.openGCalDeadline = function() {
         const deadline = document.getElementById('deadline-date').value;
         const memo = document.getElementById('manuscript-memo').value.trim();
-        const current = document.getElementById('current-page').value;
-        const target = document.getElementById('target-page').value;
+        const current = appData.manuscript_current;
+        const target = appData.manuscript_target;
 
         let eventTitle = memo ? memo.split('\n')[0] : "締め切り";
         const text = encodeURIComponent(eventTitle);
@@ -1137,11 +1143,10 @@
         if (!files || files.length === 0) return;
 
         const fileNames = Array.from(files).map(f => f.name).join(', ');
-        document.getElementById(`${type}-file-name`).textContent = `選択中: ${fileNames}`;
+        document.getElementById(`${type}-file-name`).textContent = `選択中(${files.length}枚): ${fileNames}`;
 
         const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
         
-        // FileReaderで読み込んでからトランザクションで安全に結合
         const base64Promises = Array.from(files).map(file => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -1206,10 +1211,11 @@
     }
 
     // ==========================================
-    // 【ネタ帳管理ロジック（トランザクション対応）】
+    // 【ネタ帳管理ロジック（独立編集マップ対応）】
     // ==========================================
     window.addIdeaItem = async function() {
-        const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [], isEditing: true };
+        const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [] };
+        ideaEditingMap[newItem.id] = true; // 新規追加時は編集モード
         await updateCloudData(data => {
             if (!data.ideas) data.ideas = [];
             data.ideas.push(newItem);
@@ -1219,6 +1225,7 @@
     }
 
     window.deleteIdeaItem = async function(id) {
+        delete ideaEditingMap[id];
         await updateCloudData(data => {
             if (!data.ideas) data.ideas = [];
             data.ideas = data.ideas.filter(i => i.id !== id);
@@ -1235,11 +1242,8 @@
     }
 
     window.toggleIdeaEdit = function(id) {
-        const item = appData.ideas.find(i => i.id === id);
-        if (item) {
-            item.isEditing = !item.isEditing;
-            renderIdeasDetail();
-        }
+        ideaEditingMap[id] = !ideaEditingMap[id];
+        renderIdeasDetail();
     }
 
     window.saveIdeaEdit = async function(id) {
@@ -1255,10 +1259,8 @@
             }
         });
 
-        const localItem = appData.ideas.find(i => i.id === id);
-        if (localItem) localItem.isEditing = false;
-        renderIdeaSidebar();
-        renderIdeasDetail();
+        ideaEditingMap[id] = false; // 登録したら編集モードを解除
+        renderIdeasManager();
     }
 
     window.handleIdeaImageUpload = async function(id, inputElement) {
@@ -1267,7 +1269,7 @@
 
         const fileNames = Array.from(files).map(f => f.name).join(', ');
         const fileNameEl = document.getElementById(`idea-file-name-${id}`);
-        if (fileNameEl) fileNameEl.textContent = `選択中: ${fileNames}`;
+        if (fileNameEl) fileNameEl.textContent = `選択中(${files.length}枚): ${fileNames}`;
 
         const base64Promises = Array.from(files).map(file => {
             return new Promise((resolve) => {
@@ -1332,18 +1334,20 @@
             return;
         }
 
+        const isEditing = !!ideaEditingMap[item.id];
+
         if (!item.images) item.images = [];
         let imgHtml = '';
         item.images.forEach((imgSrc, imgIdx) => {
             imgHtml += `
                 <div class="img-thumb-wrap">
                     <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
-                    ${item.isEditing ? `<button class="img-delete-btn" onclick="deleteIdeaImage(${item.id}, ${imgIdx})">×</button>` : ''}
+                    ${isEditing ? `<button class="img-delete-btn" onclick="deleteIdeaImage(${item.id},${imgIdx})">×</button>` : ''}
                 </div>
             `;
         });
 
-        if (!item.isEditing) {
+        if (!isEditing) {
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細確認</h3>
@@ -1375,10 +1379,10 @@
                 <textarea id="idea-content-input-${item.id}" class="memo-box" style="height: 180px;" placeholder="アイデアの詳細、セリフ、展開などを入力...">${item.content || ''}</textarea>
                 
                 <div style="margin-top: 15px;">
-                    <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像追加 (複数可):</label>
+                    <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像追加 (複数可・一括選択OK):</label>
                     <input type="file" accept="image/*" multiple onchange="handleIdeaImageUpload(${item.id}, this)">
                     <div id="idea-file-name-${item.id}" class="file-name-display">選択されていません</div>
-                    <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                    <div class="upload-note">※複数の画像をまとめて選択してアップロードできます</div>
                     <div class="img-preview-container">${imgHtml}</div>
                 </div>
             `;
@@ -1386,10 +1390,11 @@
     }
 
     // ==========================================
-    // 【インプット情報管理ロジック（トランザクション対応）】
+    // 【インプット情報管理ロジック（独立編集マップ対応）】
     // ==========================================
     window.addInputItem = async function() {
-        const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [], isEditing: true };
+        const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [] };
+        inputEditingMap[newItem.id] = true; // 新規追加時は編集モード
         await updateCloudData(data => {
             if (!data.inputs) data.inputs = [];
             data.inputs.push(newItem);
@@ -1399,6 +1404,7 @@
     }
 
     window.deleteInputItem = async function(id) {
+        delete inputEditingMap[id];
         await updateCloudData(data => {
             if (!data.inputs) data.inputs = [];
             data.inputs = data.inputs.filter(i => i.id !== id);
@@ -1415,11 +1421,8 @@
     }
 
     window.toggleInputEdit = function(id) {
-        const item = appData.inputs.find(i => i.id === id);
-        if (item) {
-            item.isEditing = !item.isEditing;
-            renderInputsDetail();
-        }
+        inputEditingMap[id] = !inputEditingMap[id];
+        renderInputsDetail();
     }
 
     window.saveInputEdit = async function(id) {
@@ -1437,10 +1440,8 @@
             }
         });
 
-        const localItem = appData.inputs.find(i => i.id === id);
-        if (localItem) localItem.isEditing = false;
-        renderInputSidebar();
-        renderInputsDetail();
+        inputEditingMap[id] = false; // 登録したら編集モードを解除
+        renderInputsManager();
     }
 
     window.handleInputImageUpload = async function(id, inputElement) {
@@ -1449,7 +1450,7 @@
 
         const fileNames = Array.from(files).map(f => f.name).join(', ');
         const fileNameEl = document.getElementById(`input-file-name-${id}`);
-        if (fileNameEl) fileNameEl.textContent = `選択中: ${fileNames}`;
+        if (fileNameEl) fileNameEl.textContent = `選択中(${files.length}枚): ${fileNames}`;
 
         const base64Promises = Array.from(files).map(file => {
             return new Promise((resolve) => {
@@ -1514,18 +1515,20 @@
             return;
         }
 
+        const isEditing = !!inputEditingMap[item.id];
+
         if (!item.images) item.images = [];
         let imgHtml = '';
         item.images.forEach((imgSrc, imgIdx) => {
             imgHtml += `
                 <div class="img-thumb-wrap">
                     <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
-                    ${item.isEditing ? `<button class="img-delete-btn" onclick="deleteInputImage(${item.id}, ${imgIdx})">×</button>` : ''}
+                    ${isEditing ? `<button class="img-delete-btn" onclick="deleteInputImage(${item.id},${imgIdx})">×</button>` : ''}
                 </div>
             `;
         });
 
-        if (!item.isEditing) {
+        if (!isEditing) {
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細確認</h3>
@@ -1561,10 +1564,10 @@
                 <textarea id="input-content-input-${item.id}" class="memo-box" style="height: 140px;" placeholder="ここから得た気づきやメモ...">${item.content || ''}</textarea>
                 
                 <div style="margin-top: 15px;">
-                    <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像追加 (複数可):</label>
+                    <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像追加 (複数可・一括選択OK):</label>
                     <input type="file" accept="image/*" multiple onchange="handleInputImageUpload(${item.id}, this)">
                     <div id="input-file-name-${item.id}" class="file-name-display">選択されていません</div>
-                    <div class="upload-note">※1枚あたり最大1MBまで推奨</div>
+                    <div class="upload-note">※複数の画像をまとめて選択してアップロードできます</div>
                     <div class="img-preview-container">${imgHtml}</div>
                 </div>
             `;
