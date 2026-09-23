@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progress & Habit Tracker (Realtime Transaction Sync)</title>
+    <title>Progress & Habit Tracker (Complete Edition)</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -540,12 +540,12 @@
                     </div>
                     <div id="remipan-view-container"></div>
                     <div id="remipan-edit-container" style="display: none;">
-                        <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力..."></textarea>
+                        <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力（画像ペーストもOK）..." onpaste="handleDayPaste(event, 'remipan')"></textarea>
                         <div style="margin-top: 10px;">
                             <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
                             <input type="file" id="remipan-file-input" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
                             <div id="remipan-file-name" class="file-name-display">選択されていません</div>
-                            <div class="upload-note">※複数の画像をまとめて選択してアップロードできます</div>
+                            <div class="upload-note">※複数の画像をまとめて選択・またはペーストで一括追加できます</div>
                         </div>
                         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
                             <button onclick="saveDayMemoAndClose('remipan')">登録する</button>
@@ -563,12 +563,12 @@
                     </div>
                     <div id="yukun-view-container"></div>
                     <div id="yukun-edit-container" style="display: none;">
-                        <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力..."></textarea>
+                        <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力（画像ペーストもOK）..." onpaste="handleDayPaste(event, 'yukun')"></textarea>
                         <div style="margin-top: 10px;">
                             <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
                             <input type="file" id="yukun-file-input" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
                             <div id="yukun-file-name" class="file-name-display">選択されていません</div>
-                            <div class="upload-note">※複数の画像をまとめて選択してアップロードできます</div>
+                            <div class="upload-note">※複数の画像をまとめて選択・またはペーストで一括追加できます</div>
                         </div>
                         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
                             <button onclick="saveDayMemoAndClose('yukun')">登録する</button>
@@ -597,7 +597,7 @@
         <div class="card">
             <div class="section-header">
                 <h3 style="margin:0;">✍️ 全体原稿ページ進捗</h3>
-                <span id="manuscript-text">(0%)</span>
+                <span id="manuscript-text" style="font-weight: bold; font-size: 1.1rem; color: var(--primary);">0%</span>
             </div>
             <progress id="manuscript-bar" value="0" max="100" style="margin-top: 10px;"></progress>
             <div class="inputs">
@@ -690,7 +690,6 @@
         inputs: []
     };
 
-    // 編集状態を独立して保持するマップ（同期によるリセットを防止）
     let ideaEditingMap = {};
     let inputEditingMap = {};
 
@@ -820,21 +819,18 @@
         const bar = document.getElementById('manuscript-bar');
         bar.max = target;
         bar.value = current;
-        document.getElementById('manuscript-text').textContent = `${current} / ${target} ページ (${percent}%)`;
+        document.getElementById('manuscript-text').textContent = `${percent}%`;
     }
 
     function renderProcesses() {
         const container = document.getElementById('process-list-container');
         container.innerHTML = '';
 
-        let totalCurrentSum = 0;
-
         processes.forEach((proc, index) => {
             if (!appData.processes[index]) {
                 appData.processes[index] = { current: 0, target: appData.manuscript_target };
             }
             const pData = appData.processes[index];
-            totalCurrentSum += pData.current;
             const percent = pData.target > 0 ? Math.min(Math.floor((pData.current / pData.target) * 100), 100) : 0;
 
             const row = document.createElement('div');
@@ -863,7 +859,6 @@
                     if (!data.processes) data.processes = {};
                     data.processes[index] = { current: curr, target: targ };
                     
-                    // 全体現在ページを全工程の平均値から自動計算して連動保存する
                     let sum = 0;
                     processes.forEach((_, idx) => {
                         sum += (data.processes[idx] ? data.processes[idx].current : 0);
@@ -1075,8 +1070,12 @@
             actionGroup.innerHTML = actionHtml;
 
             let imgHtml = '';
-            images.forEach((imgSrc) => {
-                imgHtml += `<div class="img-thumb-wrap"><img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')"></div>`;
+            images.forEach((imgSrc, imgIdx) => {
+                imgHtml += `
+                    <div class="img-thumb-wrap">
+                        <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
+                    </div>
+                `;
             });
 
             viewContainer.innerHTML = `
@@ -1089,6 +1088,26 @@
 
             let actionHtml = `<button class="delete-btn-danger" onclick="clearDayData('${type}')">削除</button>`;
             actionGroup.innerHTML = actionHtml;
+
+            // 編集モード時のサムネイル（削除ボタン付き）
+            let imgHtml = '';
+            images.forEach((imgSrc, imgIdx) => {
+                imgHtml += `
+                    <div class="img-thumb-wrap">
+                        <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
+                        <button class="img-delete-btn" onclick="deleteDayImage('${type}', ${imgIdx})">×</button>
+                    </div>
+                `;
+            });
+
+            // 既存のプレビュー表示エリアを更新するか、編集コンテナ内に反映する
+            let previewWrap = editContainer.querySelector('.edit-img-preview-list');
+            if (!previewWrap) {
+                previewWrap = document.createElement('div');
+                previewWrap.className = 'edit-img-preview-list img-preview-container';
+                editContainer.insertBefore(previewWrap, editContainer.querySelector('div[style*="margin-top: 15px"]'));
+            }
+            previewWrap.innerHTML = imgHtml;
         }
     }
 
@@ -1163,6 +1182,50 @@
             targetObj[imgKey].push(...newImages);
         });
         inputElement.value = '';
+        updateSelectedDayView();
+    }
+
+    // カレンダーメモ欄での画像ペースト対応（複数枚一括対応）
+    window.handleDayPaste = async function(event, type) {
+        const items = event.clipboardData.items;
+        const files = [];
+        for (const item of items) {
+            if (item.type.indexOf('image') === 0) {
+                const file = item.getAsFile();
+                if (file) files.push(file);
+            }
+        }
+        if (files.length > 0) {
+            event.preventDefault();
+            const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+            const base64Promises = files.map(file => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            const newImages = await Promise.all(base64Promises);
+
+            await updateCloudData(data => {
+                const targetObj = (type === 'remipan') ? (data.day_images_remipan = data.day_images_remipan || {}) : (data.day_images_yukun = data.day_images_yukun || {});
+                if (!targetObj[imgKey]) targetObj[imgKey] = [];
+                targetObj[imgKey].push(...newImages);
+            });
+            updateSelectedDayView();
+        }
+    }
+
+    window.deleteDayImage = async function(type, imgIndex) {
+        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
+        await updateCloudData(data => {
+            const targetObj = (type === 'remipan') ? data.day_images_remipan : data.day_images_yukun;
+            if (targetObj && targetObj[imgKey]) {
+                targetObj[imgKey].splice(imgIndex, 1);
+            }
+        });
+        updateSelectedDayView();
     }
 
     function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
@@ -1211,11 +1274,11 @@
     }
 
     // ==========================================
-    // 【ネタ帳管理ロジック（独立編集マップ対応）】
+    // 【ネタ帳管理ロジック】
     // ==========================================
     window.addIdeaItem = async function() {
         const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [] };
-        ideaEditingMap[newItem.id] = true; // 新規追加時は編集モード
+        ideaEditingMap[newItem.id] = true;
         await updateCloudData(data => {
             if (!data.ideas) data.ideas = [];
             data.ideas.push(newItem);
@@ -1259,7 +1322,7 @@
             }
         });
 
-        ideaEditingMap[id] = false; // 登録したら編集モードを解除
+        ideaEditingMap[id] = false;
         renderIdeasManager();
     }
 
@@ -1390,11 +1453,11 @@
     }
 
     // ==========================================
-    // 【インプット情報管理ロジック（独立編集マップ対応）】
+    // 【インプット情報管理ロジック】
     // ==========================================
     window.addInputItem = async function() {
         const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [] };
-        inputEditingMap[newItem.id] = true; // 新規追加時は編集モード
+        inputEditingMap[newItem.id] = true;
         await updateCloudData(data => {
             if (!data.inputs) data.inputs = [];
             data.inputs.push(newItem);
@@ -1440,7 +1503,7 @@
             }
         });
 
-        inputEditingMap[id] = false; // 登録したら編集モードを解除
+        inputEditingMap[id] = false;
         renderInputsManager();
     }
 
@@ -1588,7 +1651,6 @@
         document.getElementById('image-modal').style.display = 'none';
     }
 
-    // 起動時にリアルタイム同期リスナーを有効化
     initRealtimeSync();
 </script>
 </body>
