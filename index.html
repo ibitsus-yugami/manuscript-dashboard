@@ -499,7 +499,7 @@
 <body>
 
 <div class="container">
-    <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+    <h1>制作 ＆ 運動 管理ダッシュボード（完全版・軽量化対応）</h1>
 
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・習慣</button>
@@ -545,7 +545,7 @@
                             <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
                             <input type="file" id="remipan-file-input" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
                             <div id="remipan-file-name" class="file-name-display">選択されていません</div>
-                            <div class="upload-note">※複数の画像をまとめて一括追加できます</div>
+                            <div class="upload-note">※複数枚の同時選択対応</div>
                         </div>
                         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
                             <button onclick="saveDayMemoAndClose('remipan')">登録する</button>
@@ -568,7 +568,7 @@
                             <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
                             <input type="file" id="yukun-file-input" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
                             <div id="yukun-file-name" class="file-name-display">選択されていません</div>
-                            <div class="upload-note">※複数の画像をまとめて一括追加できます</div>
+                            <div class="upload-note">※複数枚の同時選択対応</div>
                         </div>
                         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
                             <button onclick="saveDayMemoAndClose('yukun')">登録する</button>
@@ -704,9 +704,9 @@
     let isYukunEditing = false;
 
     // ==========================================
-    // 【画像自動リサイズ＆圧縮ユーティリティ】
+    // 【強力画像リサイズ＆軽量圧縮ユーティリティ】
     // ==========================================
-    function compressAndResizeImage(file, maxWidth = 800, quality = 0.7) {
+    function compressAndResizeImage(file, maxWidth = 450, quality = 0.5) {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -766,7 +766,8 @@
                 transaction.set(docRef, cloudData);
             });
         } catch (e) {
-            console.error("トランザクション失敗:", e);
+            console.error("トランザクション失敗（容量制限の可能性があります）:", e);
+            alert("データの保存に失敗しました。画像サイズやデータ量を確認してください。");
         }
     }
 
@@ -1204,7 +1205,7 @@
         updateSelectedDayView();
     }
 
-    // カレンダーメモ欄での画像ペースト対応（複数枚一括対応・自動圧縮）
+    // カレンダーメモ欄での画像ペースト対応（複数枚一括対応・強力圧縮）
     window.handleDayPaste = async function(event, type) {
         const items = event.clipboardData.items;
         const files = [];
@@ -1450,7 +1451,7 @@
                     <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像追加 (複数可・一括選択OK):</label>
                     <input type="file" accept="image/*" multiple onchange="handleIdeaImageUpload(${item.id}, this)">
                     <div id="idea-file-name-${item.id}" class="file-name-display">選択されていません</div>
-                    <div class="upload-note">※複数の画像をまとめて選択してアップロードできます（自動圧縮対応）</div>
+                    <div class="upload-note">※複数の画像をまとめて選択してアップロードできます（強力自動圧縮対応）</div>
                     <div class="img-preview-container">${imgHtml}</div>
                 </div>
             `;
@@ -1628,7 +1629,7 @@
                     <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">画像追加 (複数可・一括選択OK):</label>
                     <input type="file" accept="image/*" multiple onchange="handleInputImageUpload(${item.id}, this)">
                     <div id="input-file-name-${item.id}" class="file-name-display">選択されていません</div>
-                    <div class="upload-note">※複数の画像をまとめて選択してアップロードできます（自動圧縮対応）</div>
+                    <div class="upload-note">※複数の画像をまとめて選択してアップロードできます（強力自動圧縮対応）</div>
                     <div class="img-preview-container">${imgHtml}</div>
                 </div>
             `;
