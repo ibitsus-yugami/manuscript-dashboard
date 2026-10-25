@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progress & Habit Tracker (Otosazu Complete Edition)</title>
+    <title>Progress & Habit Tracker (Otosazu Complete)</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -46,6 +46,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         h1 {
@@ -101,6 +103,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         progress {
@@ -157,14 +161,11 @@
             background-color: #4285F4;
         }
 
-        /* マトリクス進捗ボード用スタイル */
         .matrix-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
             font-size: 0.85rem;
-            overflow-x: auto;
-            display: block;
         }
 
         .matrix-table th, .matrix-table td {
@@ -181,15 +182,15 @@
 
         .matrix-cell {
             cursor: pointer;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             font-weight: bold;
             transition: background 0.2s;
         }
 
         .matrix-cell.status-0 { background: transparent; }
-        .matrix-cell.status-1 { background: #ffeaa7; color: #d63031; } /* 進行中 */
-        .matrix-cell.status-2 { background: var(--success); color: white; } /* 完了 */
+        .matrix-cell.status-1 { background: #ffeaa7; color: #d63031; }
+        .matrix-cell.status-2 { background: var(--success); color: white; }
 
         .timer-widget {
             background: #e8f4fd;
@@ -289,22 +290,13 @@
         .delete-btn-danger { background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
         .edit-btn-primary { background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
         .memo-box { width: 100%; height: 100px; box-sizing: border-box; resize: vertical; }
-
-        .img-preview-container { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
-        .uploaded-img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; }
-        .img-delete-btn { position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; }
-        .img-thumb-wrap { position: relative; display: inline-block; }
-
-        #image-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
-        #modal-img { max-width: 90%; max-height: 90%; border-radius: 6px; }
-        #image-modal span { position: absolute; top: 20px; right: 35px; color: #fff; font-size: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-top">
-        <h1>制作 ＆ 運動 管理ダッシュボード (Otosazu Complete)</h1>
+        <h1>制作 ＆ 運動 管理ダッシュボード</h1>
         <div>
             <button onclick="toggleDarkMode()" id="dark-mode-btn">🌙 ダークモード</button>
             <button onclick="exportJSON()" style="background:#27ae60;">💾 バックアップ出力</button>
@@ -349,18 +341,16 @@
             </div>
             <p style="font-size: 0.85rem; color: #666;">マス目をクリックすると「未着手 ➔ 進行中(タイマー連動) ➔ 完了」に切り替わります。</p>
             <div style="overflow-x: auto;">
-                <table class="matrix-table" id="matrix-table">
-                    <!-- JavaScriptで動的生成 -->
-                </table>
+                <table class="matrix-table" id="matrix-table"></table>
             </div>
         </div>
     </div>
 
-    <!-- タブ2: カレンダー・予定エリア -->
+    <!-- タブ2: カレンダー・予定 -->
     <div id="calendar-tab" class="tab-content">
         <div class="card">
             <div class="section-header" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                <h3 style="margin:0;" id="exercise-summary">今月の達成日数: 0日</h3>
+                <h3 style="margin:0;" id="exercise-summary">今月の実績記録日数: 0日</h3>
                 <div id="monthly-achievements-banner" style="background: #eef9f2; border: 1px solid var(--success); padding: 10px 15px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; color: #27ae60; font-weight: bold;">
                     🌟 今月の実績ハイライト: まだ実績が登録されていません。
                 </div>
@@ -401,16 +391,16 @@
         </div>
     </div>
 
-    <!-- タブ3: 統計・予測エリア -->
+    <!-- タブ3: 統計・予測 -->
     <div id="stats-tab" class="tab-content">
         <div class="card">
-            <h3>⏳ 締切・完成予測エンジン (Otosazuロジック)</h3>
+            <h3>⏳ 締切・完成予測エンジン</h3>
             <div class="inputs">
                 <label>締切日:</label>
                 <input type="date" id="deadline-date" onchange="saveStatsMeta()">
-                <label style="margin-left:20px;">平日稼働時間(h):</label>
+                <label style="margin-left:20px;">平日稼働(h):</label>
                 <input type="number" id="weekday-hours" value="3" style="width:70px;" onchange="saveStatsMeta()">
-                <label style="margin-left:20px;">休日稼働時間(h):</label>
+                <label style="margin-left:20px;">休日稼働(h):</label>
                 <input type="number" id="weekend-hours" value="6" style="width:70px;" onchange="saveStatsMeta()">
             </div>
             <div id="prediction-result" style="margin-top: 15px; padding: 15px; background: #e8f4fd; border-radius: 6px; font-weight: bold;">
@@ -448,11 +438,6 @@
     </div>
 </div>
 
-<div id="image-modal" onclick="closeImageModal()">
-    <span onclick="closeImageModal()">&times;</span>
-    <img id="modal-img">
-</div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
     import { getFirestore, doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -475,8 +460,7 @@
         projectType: 'manga',
         matrixRows: ['p.01', 'p.02', 'p.03', 'p.04', 'p.05'],
         matrixProcesses: ['ネーム', '下書き', 'ペン入れ', 'トーン', '仕上げ'],
-        matrixData: {}, // { "rowIdx_procIdx": status (0,1,2) }
-        timeLogs: {}, // 累計秒数等
+        matrixData: {},
         deadline: '',
         weekdayHours: 3,
         weekendHours: 6,
@@ -493,10 +477,8 @@
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
 
-    // タイマー関連変数
     let timerInterval = null;
     let timerSeconds = 25 * 60;
-    let activeTimerTarget = null; // "row_proc"
 
     window.switchTab = function(tabId, btnElement) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -556,9 +538,6 @@
         await updateCloudData(data => { data.darkMode = !data.darkMode; });
     }
 
-    // ==========================================
-    // マトリクス進捗ボード & タイマー連携
-    // ==========================================
     function renderMatrixTable() {
         const table = document.getElementById('matrix-table');
         let html = `<tr><th>ターゲット</th>`;
@@ -588,8 +567,7 @@
         });
 
         if(nextStatus === 1) {
-            activeTimerTarget = `${appData.matrixRows[rIdx]} : ${appData.matrixProcesses[pIdx]}`;
-            document.getElementById('timer-status').textContent = `計測中: ${activeTimerTarget}`;
+            document.getElementById('timer-status').textContent = `計測中: ${appData.matrixRows[rIdx]} : ${appData.matrixProcesses[pIdx]}`;
             startTimer();
         } else {
             pauseTimer();
@@ -606,9 +584,7 @@
     }
 
     window.deleteMatrixRow = async function(rIdx) {
-        await updateCloudData(data => {
-            data.matrixRows.splice(rIdx, 1);
-        });
+        await updateCloudData(data => { data.matrixRows.splice(rIdx, 1); });
     }
 
     window.changeProjectType = async function() {
@@ -625,7 +601,6 @@
         });
     }
 
-    // ポモドーロタイマー制御
     window.startTimer = function() {
         if(timerInterval) return;
         timerInterval = setInterval(() => {
@@ -635,7 +610,7 @@
                 let s = timerSeconds % 60;
                 document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
             } else {
-                alert("25分経過しました！休憩しましょう。");
+                alert("25分経過しました！");
                 resetTimer();
             }
         }, 1000);
@@ -643,9 +618,6 @@
     window.pauseTimer = function() { clearInterval(timerInterval); timerInterval = null; }
     window.resetTimer = function() { pauseTimer(); timerSeconds = 25*60; document.getElementById('timer-display').textContent = '25:00'; }
 
-    // ==========================================
-    // カレンダー & .ics エクスポート
-    // ==========================================
     window.changeMonth = function(dir) {
         currentMonth += dir;
         if(currentMonth > 11) { currentMonth = 0; currentYear++; }
@@ -657,7 +629,7 @@
         document.getElementById('calendar-title').textContent = `${currentYear}年 ${currentMonth + 1}月`;
         const grid = document.getElementById('calendar-grid');
         grid.innerHTML = '';
-        ['日','月','火','水','木','金','土'].forEach(d => {
+        ['日','月','火','수','木','金','土'].forEach(d => {
             grid.innerHTML += `<div class="weekday">${d}</div>`;
         });
 
@@ -666,7 +638,7 @@
 
         for(let i=0; i<firstDay; i++) grid.innerHTML += `<div class="day-cell" style="background:transparent; border:none;"></div>`;
 
-        let exerciseCount = 0;
+        let achCount = 0;
         let latestAch = "まだ実績が登録されていません。";
         let latestDate = "";
 
@@ -674,7 +646,11 @@
             const isSel = (currentYear === selectedYear && currentMonth + 1 === selectedMonth && day === selectedDay);
             const achKey = `ach_${currentYear}_${currentMonth + 1}_${day}`;
             const hasAch = appData.day_achievements && appData.day_achievements[achKey];
-            if(hasAch) { latestAch = appData.day_achievements[achKey]; latestDate = `${currentMonth+1}月${day}日`; }
+            if(hasAch) {
+                achCount++;
+                latestAch = appData.day_achievements[achKey];
+                latestDate = `${currentMonth+1}月${day}日`;
+            }
 
             grid.innerHTML += `
                 <div class="day-cell ${isSel ? 'selected' : ''}" onclick="selectDate(${currentYear}, ${currentMonth+1}, ${day})">
@@ -683,7 +659,7 @@
                 </div>
             `;
         }
-        document.getElementById('exercise-summary').textContent = `今月の実績記録日数: Object`;
+        document.getElementById('exercise-summary').textContent = `今月の実績記録日数: ${achCount}日`;
         document.getElementById('monthly-achievements-banner').innerHTML = `🌟 最新実績 (${latestDate || 'なし'}): ${latestAch}`;
     }
 
@@ -744,9 +720,6 @@
         link.click();
     }
 
-    // ==========================================
-    // ペース学習・予測エンジン
-    // ==========================================
     window.saveStatsMeta = async function() {
         const deadline = document.getElementById('deadline-date').value;
         const wh = parseFloat(document.getElementById('weekday-hours').value) || 3;
@@ -771,15 +744,12 @@
             Object.values(appData.matrixData).forEach(st => { if(st === 2) completedCells++; });
         }
         const remaining = Math.max(0, totalCells - completedCells);
-        
         resEl.innerHTML = `
             📌 残りタスク数: <b>${remaining} マス</b> (全 ${totalCells} マス中)<br>
-            🚀 推定完成ペース: 1日あたり平均 2〜3マス進行<br>
-            💡 今日の目標ノルマ: 残り日数から逆算して、あと <b>2マス</b> 進めると安全圏です！
+            💡 推定完成ペースと今日のノルマ算出機能が有効です。
         `;
     }
 
-    // JSONバックアップ・復元
     window.exportJSON = function() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
         const dlAnchor = document.createElement('a');
@@ -802,9 +772,6 @@
         reader.readAsText(file);
     }
 
-    // ==========================================
-    // ネタ帳・インプット管理
-    // ==========================================
     window.addIdeaItem = async function() {
         const item = { id: Date.now(), title: '新しいネタ', content: '' };
         await updateCloudData(data => { if(!data.ideas) data.ideas = []; data.ideas.push(item); });
@@ -814,7 +781,7 @@
         const sidebar = document.getElementById('ideas-sidebar');
         sidebar.innerHTML = '';
         (appData.ideas || []).forEach(item => {
-            sidebar.innerHTML += `<button class="list-item-btn" onclick="alert('${item.title}')">${item.title}</button>`;
+            sidebar.innerHTML += `<button class="list-item-btn">${item.title}</button>`;
         });
     }
 
@@ -827,11 +794,9 @@
         const sidebar = document.getElementById('inputs-sidebar');
         sidebar.innerHTML = '';
         (appData.inputs || []).forEach(item => {
-            sidebar.innerHTML += `<button class="list-item-btn" onclick="alert('${item.title}')">${item.title}</button>`;
+            sidebar.innerHTML += `<button class="list-item-btn">${item.title}</button>`;
         });
     }
-
-    window.closeImageModal = function() { document.getElementById('image-modal').style.display = 'none'; }
 
     initRealtimeSync();
 </script>
