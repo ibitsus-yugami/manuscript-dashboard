@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progress & Habit Tracker (Complete Edition)</title>
+    <title>Progress & Habit Tracker (Multi-Project Edition)</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -24,16 +24,18 @@
             padding: 20px;
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
+        h1 { font-size: 1.4rem; margin: 0; color: #2c3e50; }
 
         .tab-menu {
             display: flex;
@@ -56,18 +58,9 @@
             transition: all 0.2s;
         }
 
-        .tab-btn.active {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .tab-btn.active { background-color: var(--primary); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
         .card {
             background: var(--card-bg);
@@ -78,434 +71,100 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
 
-        progress {
-            width: 100%;
-            height: 14px;
-            border-radius: 7px;
-            overflow: hidden;
-        }
-
-        progress::-webkit-progress-bar {
-            background-color: var(--gray);
-            border-radius: 7px;
-        }
-
-        progress::-webkit-progress-value {
-            background-color: var(--primary);
-            border-radius: 7px;
-        }
-
-        .inputs {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+        progress { width: 100%; height: 14px; border-radius: 7px; overflow: hidden; }
+        progress::-webkit-progress-bar { background-color: var(--gray); border-radius: 7px; }
+        progress::-webkit-progress-value { background-color: var(--primary); border-radius: 7px; }
 
         input, select, textarea {
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-family: inherit;
+            padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem; font-family: inherit;
         }
 
         button {
-            padding: 8px 16px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85rem;
+            padding: 8px 16px; background-color: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem;
         }
+        button:hover { opacity: 0.9; }
 
-        button:hover {
-            opacity: 0.9;
-        }
+        .gcal-btn { background-color: #4285F4; }
 
-        .gcal-btn {
-            background-color: #4285F4;
-        }
-
-        .matrix-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            display: block;
-            overflow-x: auto;
-        }
-
-        .matrix-table th, .matrix-table td {
-            border: 1px solid var(--border-color);
-            padding: 8px;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        .matrix-table th {
-            background: var(--gray);
-            color: var(--text-color);
-        }
-
-        .matrix-cell {
-            cursor: pointer;
-            width: 45px;
-            height: 40px;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
+        /* マトリクスボード */
+        .matrix-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; display: block; overflow-x: auto; }
+        .matrix-table th, .matrix-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; white-space: nowrap; }
+        .matrix-table th { background: var(--gray); color: var(--text-color); }
+        .matrix-cell { cursor: pointer; width: 45px; height: 40px; font-weight: bold; transition: background 0.2s; }
         .matrix-cell.status-0 { background: transparent; }
         .matrix-cell.status-1 { background: #ffeaa7; color: #d63031; }
         .matrix-cell.status-2 { background: var(--success); color: white; }
 
         .deadline-info {
-            display: flex;
-            gap: 15px;
-            margin-top: 12px;
-            align-items: center;
-            font-size: 0.9rem;
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            flex-wrap: wrap;
+            display: flex; gap: 15px; margin-top: 12px; align-items: center; font-size: 0.9rem; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); flex-wrap: wrap;
         }
 
-        .memo-box {
-            width: 100%;
-            margin-top: 5px;
-            resize: vertical;
-            height: 100px;
-            box-sizing: border-box;
-        }
+        .memo-box { width: 100%; margin-top: 5px; resize: vertical; height: 100px; box-sizing: border-box; }
 
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-
-        .weekday {
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            padding-bottom: 5px;
-        }
-
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .weekday { text-align: center; font-weight: bold; font-size: 0.85rem; color: #7f8c8d; padding-bottom: 5px; }
         .day-cell {
-            background: #fafbfc;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            min-height: 80px;
-            padding: 6px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: background 0.2s;
+            background: #fafbfc; border: 1px solid var(--border-color); border-radius: 6px; min-height: 80px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: background 0.2s;
         }
+        .day-cell:hover { background: #f0f4f8; }
+        .day-cell.selected { border-color: var(--primary); background: #ebf3fc; }
+        .day-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px; }
+        .day-number { font-size: 0.85rem; color: #333; font-weight: bold; }
+        .deadline-badge { font-size: 0.65rem; background-color: var(--danger); color: white; padding: 1px 4px; border-radius: 3px; font-weight: bold; }
 
-        .day-cell:hover {
-            background: #f0f4f8;
-        }
-
-        .day-cell.selected {
-            border-color: var(--primary);
-            background: #ebf3fc;
-        }
-
-        .day-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 4px;
-        }
-
-        .day-number {
-            font-size: 0.85rem;
-            color: #333;
-            font-weight: bold;
-        }
-
-        .deadline-badge {
-            font-size: 0.65rem;
-            background-color: var(--danger);
-            color: white;
-            padding: 1px 4px;
-            border-radius: 3px;
-            font-weight: bold;
-        }
-
-        .trackers-container {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            width: 100%;
-            margin-top: 4px;
-        }
-
-        .tracker-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            color: #666;
-        }
-
+        .trackers-container { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 4px; }
+        .tracker-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #666; }
         .habit-btn {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            background: white;
-            cursor: pointer;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
+            width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--border-color); background: white; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0;
         }
+        .habit-btn.status-maru { background-color: var(--success); color: white; border-color: var(--success); }
+        .habit-btn.status-batsu { background-color: var(--danger); color: white; border-color: var(--danger); }
 
-        .habit-btn.status-maru {
-            background-color: var(--success);
-            color: white;
-            border-color: var(--success);
-        }
-
-        .habit-btn.status-batsu {
-            background-color: var(--danger);
-            color: white;
-            border-color: var(--danger);
-        }
-
-        .day-detail-card {
-            margin-top: 20px;
-            background: #fdfefe;
-            border: 1px solid var(--primary);
-        }
-
-        .manager-layout {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) {
-            .manager-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .sidebar-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            max-height: 500px;
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-            padding-right: 10px;
-        }
-
+        .manager-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+        @media (max-width: 768px) { .manager-layout { grid-template-columns: 1fr; } }
+        .sidebar-list { display: flex; flexDirection: column; gap: 6px; max-height: 500px; overflow-y: auto; border-right: 1px solid var(--border-color); padding-right: 10px; }
         .list-item-btn {
-            text-align: left;
-            padding: 10px 12px;
-            background: #f8f9fa;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-color);
-            transition: all 0.2s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            text-align: left; padding: 10px 12px; background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+        .list-item-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .detail-pane { background: #fafbfc; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; min-height: 400px; }
 
-        .list-item-btn:hover {
-            background: #e9ecef;
-        }
+        .delete-btn-danger { background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .edit-btn-primary { background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .action-group { display: flex; gap: 8px; align-items: center; }
+        .overview-box { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 12px; white-space: pre-wrap; word-break: break-all; font-size: 0.9rem; line-height: 1.5; }
+        .overview-title { font-size: 1.1rem; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+        .overview-link { display: inline-block; margin-bottom: 10px; color: var(--primary); word-break: break-all; font-size: 0.85rem; }
+        .img-preview-container { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+        .img-thumb-wrap { position: relative; display: inline-block; }
+        .uploaded-img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; }
+        .img-delete-btn { position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .file-name-display { font-size: 0.8rem; color: #2980b9; margin-top: 4px; font-weight: bold; }
 
-        .list-item-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .detail-pane {
-            background: #fafbfc;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            min-height: 400px;
-        }
-
-        .delete-btn-danger {
-            background-color: var(--danger);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .edit-btn-primary {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .action-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .overview-box {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 12px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .overview-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .overview-link {
-            display: inline-block;
-            margin-bottom: 10px;
-            color: var(--primary);
-            word-break: break-all;
-            font-size: 0.85rem;
-        }
-
-        .img-preview-container {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .img-thumb-wrap {
-            position: relative;
-            display: inline-block;
-        }
-
-        .uploaded-img-preview {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .uploaded-img-preview:hover {
-            transform: scale(1.03);
-        }
-
-        .img-delete-btn {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .upload-note {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 4px;
-        }
-
-        .file-name-display {
-            font-size: 0.8rem;
-            color: #2980b9;
-            margin-top: 4px;
-            font-weight: bold;
-        }
-
-        #image-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
-            align-items: center;
-            justify-content: center;
-        }
-
-        #modal-img {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        #image-modal span {
-            position: absolute;
-            top: 20px;
-            right: 35px;
-            color: #f1f1f1;
-            font-size: 40px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        #image-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+        #modal-img { max-width: 90%; max-height: 90%; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        #image-modal span { position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+    <div class="header-top">
+        <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <label style="font-weight:bold; font-size:0.9rem;">作品選択:</label>
+            <select id="project-selector" onchange="switchProject(this.value)" style="font-weight:bold; padding:6px 12px; background:white;">
+                <option value="project_1">星降る町の配達屋</option>
+                <option value="project_2">ドラゴンのガレージキット</option>
+            </select>
+            <button onclick="addNewProject()" style="background:#27ae60; padding:6px 10px; font-size:0.8rem;">＋ 作品追加</button>
+        </div>
+    </div>
 
-    <!-- ① カレンダータブを一番最初に変更 -->
+    <!-- タブメニュー (1番目がカレンダー、2番目が進捗ボード、3番目が原稿進捗) -->
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・習慣</button>
         <button class="tab-btn" onclick="switchTab('matrix-tab', this)">📊 進捗ボード</button>
@@ -534,11 +193,8 @@
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
 
-        <!-- 選択した日付の詳細メモビュー -->
         <div class="card day-detail-card" id="day-detail-section">
             <h3 id="selected-date-title" style="margin-top:0; margin-bottom:15px; font-size: 1.1rem; color: var(--primary);">日付を選択してください</h3>
-            
-            <!-- 今日書く実績の専用エリア -->
             <div style="background: #eef2f7; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50;">🔥 今日書く実績・成果</label>
@@ -548,7 +204,6 @@
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <!-- れみぱん用メモ -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50;">🐱 れみぱん用メモ</label>
@@ -563,7 +218,6 @@
                             <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
                             <input type="file" id="remipan-file-input" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
                             <div id="remipan-file-name" class="file-name-display">選択されていません</div>
-                            <div class="upload-note">※複数枚の同時選択対応</div>
                         </div>
                         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
                             <button onclick="saveDayMemoAndClose('remipan')">登録する</button>
@@ -571,7 +225,6 @@
                     </div>
                 </div>
 
-                <!-- ゆくん用メモ -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50;">🐶 ゆくん用メモ</label>
@@ -586,7 +239,6 @@
                             <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
                             <input type="file" id="yukun-file-input" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
                             <div id="yukun-file-name" class="file-name-display">選択されていません</div>
-                            <div class="upload-note">※複数枚の同時選択対応</div>
                         </div>
                         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
                             <button onclick="saveDayMemoAndClose('yukun')">登録する</button>
@@ -597,18 +249,13 @@
         </div>
     </div>
 
-    <!-- タブ2: 進捗ボード (マトリクスUI：指定工程対応＆自由追加可能) -->
+    <!-- タブ2: 進捗ボード（マトリクス＆工程バー連動） -->
     <div id="matrix-tab" class="tab-content">
         <div class="card">
             <div class="section-header">
-                <h3 style="margin:0;">📊 進捗ボード（マトリクス）</h3>
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <select id="project-type" onchange="changeProjectType()">
-                        <option value="manga">漫画 (.cmc / ページ単位)</option>
-                        <option value="illustration">イラスト (.clip 連作)</option>
-                        <option value="other">ファイルなし (自由パーツ)</option>
-                    </select>
-                    <button onclick="addMatrixRow()">＋ 項目追加</button>
+                <h3 style="margin:0;" id="matrix-project-title">📊 ページ × 工程 マトリクス進捗ボード</h3>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="addMatrixRow()">＋ ページ/項目追加</button>
                     <button onclick="addMatrixProcess()" style="background:#27ae60;">＋ 工程追加</button>
                 </div>
             </div>
@@ -636,14 +283,15 @@
 
         <div class="card">
             <div class="section-header">
-                <h3 style="margin:0;">✍️ 全体原稿ページ進捗</h3>
+                <h3 style="margin:0;">✍️ 全体原稿進捗</h3>
                 <span id="manuscript-text" style="font-weight: bold; font-size: 1.1rem; color: var(--primary);">0%</span>
             </div>
             <progress id="manuscript-bar" value="0" max="100" style="margin-top: 10px;"></progress>
-            <div class="inputs">
-                <span>目標ページ数:</span>
-                <input type="number" id="target-page" placeholder="目標ページ" style="width: 100px;" value="24" onchange="updateManuscriptTarget()">
-            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; margin-bottom:15px;">📊 工程別の進み具合 (ビジュアル連動)</h3>
+            <div id="process-bars-container"></div>
         </div>
     </div>
 
@@ -655,7 +303,6 @@
                 <button onclick="addIdeaItem()">＋ 新規ネタを追加</button>
             </div>
             <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると詳細概要の確認・編集が行えます。</p>
-            
             <div class="manager-layout">
                 <div class="sidebar-list" id="ideas-sidebar"></div>
                 <div class="detail-pane" id="ideas-detail">
@@ -673,7 +320,6 @@
                 <button onclick="addInputItem()">＋ 新規インプットを追加</button>
             </div>
             <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択するとリンクや詳細内容、画像を確認・編集できます。</p>
-            
             <div class="manager-layout">
                 <div class="sidebar-list" id="inputs-sidebar"></div>
                 <div class="detail-pane" id="inputs-detail">
@@ -707,18 +353,29 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ② ご指定の漫画用デフォルト工程
+    // ② ご指定の漫画用デフォルト10工程
     const defaultMangaProcesses = ['プロット', 'ネーム', '下書き', '3D配置', 'ペン入れ', 'トーン', '写植', 'ベタ', '背景', '仕上げ'];
 
     let appData = {
-        manuscript_current: 0,
-        manuscript_target: 24,
-        manuscript_deadline: '',
-        manuscript_memo: '',
-        projectType: 'manga',
-        matrixRows: ['p.01', 'p.02', 'p.03', 'p.04', 'p.05'],
-        matrixProcesses: [...defaultMangaProcesses],
-        matrixData: {},
+        currentProjectId: 'project_1',
+        projects: {
+            'project_1': {
+                name: '星降る町の配達屋',
+                deadline: '',
+                memo: '',
+                matrixRows: ['p.01', 'p.02', 'p.03', 'p.04', 'p.05'],
+                matrixProcesses: [...defaultMangaProcesses],
+                matrixData: {}
+            },
+            'project_2': {
+                name: 'ドラゴンのガレージキット',
+                deadline: '',
+                memo: '',
+                matrixRows: ['パーツA', 'パーツB', 'パーツC'],
+                matrixProcesses: ['原型', '複製', '表面処理', '塗装'],
+                matrixData: {}
+            }
+        },
         trackers: {},
         day_memos_remipan: {},
         day_memos_yukun: {},
@@ -731,14 +388,11 @@
 
     let ideaEditingMap = {};
     let inputEditingMap = {};
-
     let selectedYear = new Date().getFullYear();
     let selectedMonth = new Date().getMonth() + 1;
     let selectedDay = new Date().getDate();
-
     let activeIdeaId = null;
     let activeInputId = null;
-
     let isRemipanEditing = false;
     let isYukunEditing = false;
 
@@ -770,7 +424,6 @@
     window.switchTab = function(tabId, btnElement) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        
         document.getElementById(tabId).classList.add('active');
         btnElement.classList.add('active');
     }
@@ -794,35 +447,22 @@
         onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const cloudData = docSnap.data();
-                appData = {
-                    manuscript_current: cloudData.manuscript_current ?? 0,
-                    manuscript_target: cloudData.manuscript_target ?? 24,
-                    manuscript_deadline: cloudData.manuscript_deadline ?? '',
-                    manuscript_memo: cloudData.manuscript_memo ?? '',
-                    projectType: cloudData.projectType ?? 'manga',
-                    matrixRows: cloudData.matrixRows ?? ['p.01', 'p.02', 'p.03'],
-                    matrixProcesses: cloudData.matrixProcesses ?? [...defaultMangaProcesses],
-                    matrixData: cloudData.matrixData ?? {},
-                    trackers: cloudData.trackers ?? {},
-                    day_memos_remipan: cloudData.day_memos_remipan ?? {},
-                    day_memos_yukun: cloudData.day_memos_yukun ?? {},
-                    day_achievements: cloudData.day_achievements ?? {},
-                    day_images_remipan: cloudData.day_images_remipan ?? {},
-                    day_images_yukun: cloudData.day_images_yukun ?? {},
-                    ideas: cloudData.ideas ?? [],
-                    inputs: cloudData.inputs ?? []
-                };
+                appData.currentProjectId = cloudData.currentProjectId ?? 'project_1';
+                appData.projects = cloudData.projects ?? appData.projects;
+                appData.trackers = cloudData.trackers ?? {};
+                appData.day_memos_remipan = cloudData.day_memos_remipan ?? {};
+                appData.day_memos_yukun = cloudData.day_memos_yukun ?? {};
+                appData.day_achievements = cloudData.day_achievements ?? {};
+                appData.day_images_remipan = cloudData.day_images_remipan ?? {};
+                appData.day_images_yukun = cloudData.day_images_yukun ?? {};
+                appData.ideas = cloudData.ideas ?? [];
+                appData.inputs = cloudData.inputs ?? [];
 
                 if (appData.ideas.length > 0 && (activeIdeaId === null || !appData.ideas.some(i => i.id === activeIdeaId))) {
                     activeIdeaId = appData.ideas[0].id;
-                } else if (appData.ideas.length === 0) {
-                    activeIdeaId = null;
                 }
-
                 if (appData.inputs.length > 0 && (activeInputId === null || !appData.inputs.some(i => i.id === activeInputId))) {
                     activeInputId = appData.inputs[0].id;
-                } else if (appData.inputs.length === 0) {
-                    activeInputId = null;
                 }
 
                 updateUI();
@@ -831,43 +471,80 @@
     }
 
     function updateUI() {
-        const targPageInput = document.getElementById('target-page');
-        if (targPageInput && document.activeElement !== targPageInput) {
-            targPageInput.value = appData.manuscript_target;
+        // プルダウンの構築
+        const selector = document.getElementById('project-selector');
+        selector.innerHTML = '';
+        for (const [pId, pObj] of Object.entries(appData.projects)) {
+            const opt = document.createElement('option');
+            opt.value = pId;
+            opt.textContent = pObj.name;
+            if (pId === appData.currentProjectId) opt.selected = true;
+            selector.appendChild(opt);
         }
+
+        const currentProj = appData.projects[appData.currentProjectId] || Object.values(appData.projects)[0];
+        document.getElementById('matrix-project-title').textContent = `📊 ${currentProj.name} - 進捗ボード`;
+
+        // メタ情報反映
         const deadlineInput = document.getElementById('deadline-date');
         if (deadlineInput && document.activeElement !== deadlineInput) {
-            deadlineInput.value = appData.manuscript_deadline;
+            deadlineInput.value = currentProj.deadline || '';
         }
         const memoInput = document.getElementById('manuscript-memo');
         if (memoInput && document.activeElement !== memoInput) {
-            memoInput.value = appData.manuscript_memo;
+            memoInput.value = currentProj.memo || '';
         }
-        const projType = document.getElementById('project-type');
-        if (projType) projType.value = appData.projectType;
 
         renderMatrixTable();
-        updateCountdown(appData.manuscript_deadline);
+        renderProcessBars(currentProj);
+        updateCountdown(currentProj.deadline);
         renderCalendar();
         updateSelectedDayView();
         renderIdeasManager();
         renderInputsManager();
     }
 
-    // マトリクスボード描画とカスタム追加・削除
+    window.switchProject = async function(pId) {
+        await updateCloudData(data => {
+            data.currentProjectId = pId;
+        });
+    }
+
+    window.addNewProject = async function() {
+        const name = prompt("新しい作品名を入力してください:", "新しい連作漫画");
+        if (!name) return;
+        const newId = 'project_' + Date.now();
+        await updateCloudData(data => {
+            if (!data.projects) data.projects = {};
+            data.projects[newId] = {
+                name: name,
+                deadline: '',
+                memo: '',
+                matrixRows: ['p.01', 'p.02', 'p.03'],
+                matrixProcesses: [...defaultMangaProcesses],
+                matrixData: {}
+            };
+            data.currentProjectId = newId;
+        });
+    }
+
+    // マトリクス進捗ボード描画
     function renderMatrixTable() {
+        const currentProj = appData.projects[appData.currentProjectId];
+        if (!currentProj) return;
+
         const table = document.getElementById('matrix-table');
         let html = `<tr><th>項目 / 工程</th>`;
-        (appData.matrixProcesses || []).forEach((proc, pIdx) => {
+        (currentProj.matrixProcesses || []).forEach((proc, pIdx) => {
             html += `<th>${proc} <button onclick="deleteMatrixProcess(${pIdx})" style="background:none; border:none; color:red; cursor:pointer; font-size:0.7rem;" title="工程削除">×</button></th>`;
         });
         html += `<th>操作</th></tr>`;
 
-        (appData.matrixRows || []).forEach((rowName, rIdx) => {
+        (currentProj.matrixRows || []).forEach((rowName, rIdx) => {
             html += `<tr><td><b>${rowName}</b></td>`;
-            (appData.matrixProcesses || []).forEach((_, pIdx) => {
+            (currentProj.matrixProcesses || []).forEach((_, pIdx) => {
                 const key = `${rIdx}_${pIdx}`;
-                const status = (appData.matrixData && appData.matrixData[key]) || 0;
+                const status = (currentProj.matrixData && currentProj.matrixData[key]) || 0;
                 let label = '-';
                 if(status === 1) label = '中';
                 if(status === 2) label = '完';
@@ -880,27 +557,28 @@
 
     window.toggleMatrixCell = async function(rIdx, pIdx) {
         const key = `${rIdx}_${pIdx}`;
-        let currentStatus = (appData.matrixData && appData.matrixData[key]) || 0;
-        let nextStatus = (currentStatus + 1) % 3;
-
         await updateCloudData(data => {
-            if(!data.matrixData) data.matrixData = {};
-            data.matrixData[key] = nextStatus;
+            const proj = data.projects[data.currentProjectId];
+            if (!proj.matrixData) proj.matrixData = {};
+            let currentStatus = proj.matrixData[key] || 0;
+            proj.matrixData[key] = (currentStatus + 1) % 3;
         });
     }
 
     window.addMatrixRow = async function() {
-        const name = prompt("追加するページ名またはパーツ名:", `p.${appData.matrixRows.length + 1}`);
+        const name = prompt("追加するページ名またはパーツ名:", `p.${appData.projects[appData.currentProjectId].matrixRows.length + 1}`);
         if(!name) return;
         await updateCloudData(data => {
-            if(!data.matrixRows) data.matrixRows = [];
-            data.matrixRows.push(name);
+            const proj = data.projects[data.currentProjectId];
+            if(!proj.matrixRows) proj.matrixRows = [];
+            proj.matrixRows.push(name);
         });
     }
 
     window.deleteMatrixRow = async function(rIdx) {
         await updateCloudData(data => {
-            if(data.matrixRows) data.matrixRows.splice(rIdx, 1);
+            const proj = data.projects[data.currentProjectId];
+            if(proj.matrixRows) proj.matrixRows.splice(rIdx, 1);
         });
     }
 
@@ -908,45 +586,74 @@
         const name = prompt("追加する工程名:", "新しい工程");
         if(!name) return;
         await updateCloudData(data => {
-            if(!data.matrixProcesses) data.matrixProcesses = [];
-            data.matrixProcesses.push(name);
+            const proj = data.projects[data.currentProjectId];
+            if(!proj.matrixProcesses) proj.matrixProcesses = [];
+            proj.matrixProcesses.push(name);
         });
     }
 
     window.deleteMatrixProcess = async function(pIdx) {
         if(!confirm("この工程を削除しますか？")) return;
         await updateCloudData(data => {
-            if(data.matrixProcesses) data.matrixProcesses.splice(pIdx, 1);
+            const proj = data.projects[data.currentProjectId];
+            if(proj.matrixProcesses) proj.matrixProcesses.splice(pIdx, 1);
         });
     }
 
-    window.changeProjectType = async function() {
-        const val = document.getElementById('project-type').value;
-        await updateCloudData(data => {
-            data.projectType = val;
-            if(val === 'illustration') {
-                data.matrixProcesses = ['ラフ', '線画', '塗り', '仕上げ'];
-            } else if(val === 'other') {
-                data.matrixProcesses = ['原型', '複製', '表面処理', '塗装'];
-            } else {
-                data.matrixProcesses = [...defaultMangaProcesses];
-            }
-        });
-    }
+    // 原稿進捗タブのビジュアル連動バー
+    function renderProcessBars(proj) {
+        const container = document.getElementById('process-bars-container');
+        container.innerHTML = '';
 
-    window.updateManuscriptTarget = async function() {
-        const targ = parseInt(document.getElementById('target-page').value) || 1;
-        await updateCloudData(data => {
-            data.manuscript_target = targ;
+        const rows = proj.matrixRows || [];
+        const processes = proj.matrixProcesses || [];
+        const totalRows = rows.length;
+        if (totalRows === 0 || processes.length === 0) {
+            container.innerHTML = '<p style="color:#888;">タスクや工程が登録されていません。</p>';
+            document.getElementById('manuscript-bar').value = 0;
+            document.getElementById('manuscript-text').textContent = '0%';
+            return;
+        }
+
+        let totalCompletedCells = 0;
+        let totalCells = totalRows * processes.length;
+
+        processes.forEach((proc, pIdx) => {
+            let completedCount = 0;
+            rows.forEach((_, rIdx) => {
+                const key = `${rIdx}_${pIdx}`;
+                if (proj.matrixData && proj.matrixData[key] === 2) {
+                    completedCount++;
+                    totalCompletedCells++;
+                }
+            });
+
+            const percent = Math.round((completedCount / totalRows) * 100);
+
+            const rowDiv = document.createElement('div');
+            rowDiv.style.marginBottom = '12px';
+            rowDiv.innerHTML = `
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:bold; margin-bottom:4px;">
+                    <span>${proc}</span>
+                    <span>${completedCount} / ${totalRows} (${percent}%)</span>
+                </div>
+                <progress value="${completedCount}" max="${totalRows}"></progress>
+            `;
+            container.appendChild(rowDiv);
         });
+
+        const overallPercent = Math.round((totalCompletedCells / totalCells) * 100);
+        document.getElementById('manuscript-bar').value = overallPercent;
+        document.getElementById('manuscript-text').textContent = `${overallPercent}%`;
     }
 
     window.saveManuscriptMeta = async function() {
         const deadline = document.getElementById('deadline-date').value;
         const memo = document.getElementById('manuscript-memo').value;
         await updateCloudData(data => {
-            data.manuscript_deadline = deadline;
-            data.manuscript_memo = memo;
+            const proj = data.projects[data.currentProjectId];
+            proj.deadline = deadline;
+            proj.memo = memo;
         });
     }
 
@@ -973,9 +680,10 @@
     }
 
     window.openGCalDeadline = function() {
-        const deadline = document.getElementById('deadline-date').value;
-        const memo = document.getElementById('manuscript-memo').value.trim();
-        let eventTitle = memo ? memo.split('\n')[0] : "締め切り";
+        const currentProj = appData.projects[appData.currentProjectId];
+        const deadline = currentProj.deadline;
+        const memo = (currentProj.memo || '').trim();
+        let eventTitle = memo ? memo.split('\n')[0] : currentProj.name + " 締め切り";
         const text = encodeURIComponent(eventTitle);
         const details = encodeURIComponent(`【詳細メモ】\n${memo}`);
         let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&details=${details}`;
@@ -998,13 +706,8 @@
 
     window.changeMonth = function(direction) {
         currentMonth += direction;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        } else if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
         renderCalendar();
     }
 
@@ -1065,7 +768,8 @@
             num.textContent = day;
             headerRow.appendChild(num);
 
-            const deadlineStr = appData.manuscript_deadline;
+            const currentProj = appData.projects[appData.currentProjectId];
+            const deadlineStr = currentProj ? currentProj.deadline : '';
             if (deadlineStr) {
                 const dDate = new Date(deadlineStr);
                 if (dDate.getFullYear() === currentYear && (dDate.getMonth() + 1) === (currentMonth + 1) && dDate.getDate() === day) {
@@ -1212,11 +916,8 @@
     }
 
     window.toggleDayEdit = function(type) {
-        if (type === 'remipan') {
-            isRemipanEditing = !isRemipanEditing;
-        } else {
-            isYukunEditing = !isYukunEditing;
-        }
+        if (type === 'remipan') { isRemipanEditing = !isRemipanEditing; }
+        else { isYukunEditing = !isYukunEditing; }
         updateSelectedDayView();
     }
 
@@ -1260,10 +961,7 @@
     window.handleDayImageUpload = async function(type, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
-
-        const fileNames = Array.from(files).map(f => f.name).join(', ');
-        document.getElementById(`${type}-file-name`).textContent = `選択中(${files.length}枚): ${fileNames}`;
-
+        document.getElementById(`${type}-file-name`).textContent = `選択中(${files.length}枚)`;
         const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
         const compressedPromises = Array.from(files).map(file => compressAndResizeImage(file));
         const newImages = await Promise.all(compressedPromises);
@@ -1316,7 +1014,6 @@
         const row = document.createElement('div');
         row.className = 'tracker-row';
         row.innerHTML = `<span>${label}</span>`;
-
         const btn = document.createElement('button');
         btn.className = 'habit-btn';
         updateButtonState(btn, status);
@@ -1346,18 +1043,12 @@
 
     function updateButtonState(btn, status) {
         btn.classList.remove('status-maru', 'status-batsu');
-        if (status === 'maru') {
-            btn.textContent = '〇';
-            btn.classList.add('status-maru');
-        } else if (status === 'batsu') {
-            btn.textContent = '×';
-            btn.classList.add('status-batsu');
-        } else {
-            btn.textContent = '-';
-        }
+        if (status === 'maru') { btn.textContent = '〇'; btn.classList.add('status-maru'); }
+        else if (status === 'batsu') { btn.textContent = '×'; btn.classList.add('status-batsu'); }
+        else { btn.textContent = '-'; }
     }
 
-    // ネタ帳管理ロジック
+    // ネタ帳ロジック
     window.addIdeaItem = async function() {
         const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [] };
         ideaEditingMap[newItem.id] = true;
@@ -1381,29 +1072,16 @@
         renderIdeasManager();
     }
 
-    window.selectIdea = function(id) {
-        activeIdeaId = id;
-        renderIdeasManager();
-    }
-
-    window.toggleIdeaEdit = function(id) {
-        ideaEditingMap[id] = !ideaEditingMap[id];
-        renderIdeasDetail();
-    }
+    window.selectIdea = function(id) { activeIdeaId = id; renderIdeasManager(); }
+    window.toggleIdeaEdit = function(id) { ideaEditingMap[id] = !ideaEditingMap[id]; renderIdeasDetail(); }
 
     window.saveIdeaEdit = async function(id) {
         const titleVal = document.getElementById(`idea-title-input-${id}`).value;
         const contentVal = document.getElementById(`idea-content-input-${id}`).value;
-
         await updateCloudData(data => {
-            if (!data.ideas) data.ideas = [];
             const item = data.ideas.find(i => i.id === id);
-            if (item) {
-                item.title = titleVal;
-                item.content = contentVal;
-            }
+            if (item) { item.title = titleVal; item.content = contentVal; }
         });
-
         ideaEditingMap[id] = false;
         renderIdeasManager();
     }
@@ -1420,7 +1098,6 @@
             sidebar.innerHTML = '<span style="font-size:0.85rem; color:#888; padding:10px;">ネタがありません</span>';
             return;
         }
-
         appData.ideas.forEach(item => {
             const btn = document.createElement('button');
             btn.className = `list-item-btn ${item.id === activeIdeaId ? 'active' : ''}`;
@@ -1433,14 +1110,8 @@
     function renderIdeasDetail() {
         const pane = document.getElementById('ideas-detail');
         const item = (appData.ideas || []).find(i => i.id === activeIdeaId);
-
-        if (!item) {
-            pane.innerHTML = '<p style="color: #888; text-align: center; margin-top: 100px;">ネタが選択されていません。</p>';
-            return;
-        }
-
+        if (!item) { pane.innerHTML = '<p style="color: #888; text-align: center; margin-top: 100px;">ネタが選択されていません。</p>'; return; }
         const isEditing = !!ideaEditingMap[item.id];
-        if (!item.images) item.images = [];
 
         if (!isEditing) {
             pane.innerHTML = `
@@ -1471,7 +1142,7 @@
         }
     }
 
-    // インプット情報管理ロジック
+    // インプット情報ロジック
     window.addInputItem = async function() {
         const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [] };
         inputEditingMap[newItem.id] = true;
@@ -1495,31 +1166,17 @@
         renderInputsManager();
     }
 
-    window.selectInput = function(id) {
-        activeInputId = id;
-        renderInputsManager();
-    }
-
-    window.toggleInputEdit = function(id) {
-        inputEditingMap[id] = !inputEditingMap[id];
-        renderInputsDetail();
-    }
+    window.selectInput = function(id) { activeInputId = id; renderInputsManager(); }
+    window.toggleInputEdit = function(id) { inputEditingMap[id] = !inputEditingMap[id]; renderInputsDetail(); }
 
     window.saveInputEdit = async function(id) {
         const titleVal = document.getElementById(`input-title-input-${id}`).value;
         const linkVal = document.getElementById(`input-link-input-${id}`).value;
         const contentVal = document.getElementById(`input-content-input-${id}`).value;
-
         await updateCloudData(data => {
-            if (!data.inputs) data.inputs = [];
             const item = data.inputs.find(i => i.id === id);
-            if (item) {
-                item.title = titleVal;
-                item.link = linkVal;
-                item.content = contentVal;
-            }
+            if (item) { item.title = titleVal; item.link = linkVal; item.content = contentVal; }
         });
-
         inputEditingMap[id] = false;
         renderInputsManager();
     }
@@ -1536,7 +1193,6 @@
             sidebar.innerHTML = '<span style="font-size:0.85rem; color:#888; padding:10px;">インプットがありません</span>';
             return;
         }
-
         appData.inputs.forEach(item => {
             const btn = document.createElement('button');
             btn.className = `list-item-btn ${item.id === activeInputId ? 'active' : ''}`;
@@ -1549,14 +1205,8 @@
     function renderInputsDetail() {
         const pane = document.getElementById('inputs-detail');
         const item = (appData.inputs || []).find(i => i.id === activeInputId);
-
-        if (!item) {
-            pane.innerHTML = '<p style="color: #888; text-align: center; margin-top: 100px;">インプット項目が選択されていません。</p>';
-            return;
-        }
-
+        if (!item) { pane.innerHTML = '<p style="color: #888; text-align: center; margin-top: 100px;">インプット項目が選択されていません。</p>'; return; }
         const isEditing = !!inputEditingMap[item.id];
-        if (!item.images) item.images = [];
 
         if (!isEditing) {
             pane.innerHTML = `
