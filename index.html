@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progress & Habit Tracker (Otosazu Complete)</title>
+    <title>Otosazu Web Dashboard (Complete)</title>
     <style>
         :root {
-            --bg-color: #f4f6f9;
+            --bg-color: #f7f5f0;
             --card-bg: #ffffff;
-            --text-color: #333333;
-            --border-color: #e1e4e8;
-            --primary: #4a90e2;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --gray: #e0e0e0;
+            --text-color: #2c2c2c;
+            --border-color: #e3decb;
+            --primary: #c86d51;
+            --success: #528c6e;
+            --danger: #b33939;
+            --gray: #f0ece1;
         }
 
         body.dark-mode {
@@ -21,10 +21,10 @@
             --card-bg: #242424;
             --text-color: #e0e0e0;
             --border-color: #383838;
-            --primary: #58a6ff;
+            --primary: #e07a5f;
             --success: #3fb950;
             --danger: #f85149;
-            --gray: #444444;
+            --gray: #333333;
         }
 
         body {
@@ -36,24 +36,20 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
 
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
-        h1 {
-            font-size: 1.5rem;
-            margin: 0;
-        }
+        h1 { font-size: 1.4rem; margin: 0; color: var(--primary); }
 
         .tab-menu {
             display: flex;
@@ -65,7 +61,7 @@
         }
 
         .tab-btn {
-            padding: 10px 15px;
+            padding: 10px 18px;
             background-color: var(--gray);
             color: var(--text-color);
             border: none;
@@ -81,13 +77,8 @@
             color: white;
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
         .card {
             background: var(--card-bg);
@@ -95,42 +86,29 @@
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
             gap: 10px;
         }
 
-        progress {
-            width: 100%;
-            height: 14px;
-            border-radius: 7px;
-            overflow: hidden;
-        }
-
-        progress::-webkit-progress-bar {
-            background-color: var(--gray);
-            border-radius: 7px;
-        }
-
-        progress::-webkit-progress-value {
+        button {
+            padding: 8px 16px;
             background-color: var(--primary);
-            border-radius: 7px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
         }
-
-        .inputs {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+        button:hover { opacity: 0.9; }
 
         input, select, textarea {
             padding: 8px;
@@ -142,239 +120,122 @@
             color: var(--text-color);
         }
 
-        button {
-            padding: 8px 16px;
-            background-color: var(--primary);
+        /* ミニタイマーウィジェット */
+        .timer-widget {
+            background: #2c2c2c;
             color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85rem;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size:.9rem;
         }
 
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .gcal-btn {
-            background-color: #4285F4;
-        }
-
+        /* マトリクスボード */
         .matrix-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
             font-size: 0.85rem;
         }
-
         .matrix-table th, .matrix-table td {
             border: 1px solid var(--border-color);
-            padding: 8px;
+            padding: 10px;
             text-align: center;
             white-space: nowrap;
         }
-
-        .matrix-table th {
-            background: var(--gray);
-            color: var(--text-color);
-        }
-
+        .matrix-table th { background: var(--gray); }
         .matrix-cell {
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 45px;
             font-weight: bold;
             transition: background 0.2s;
         }
+        .matrix-cell.status-0 { background: transparent; color: #aaa; }
+        .matrix-cell.status-1 { background: #fae1dd; color: var(--primary); } /* 進行中 */
+        .matrix-cell.status-2 { background: var(--success); color: white; } /* 完了 */
 
-        .matrix-cell.status-0 { background: transparent; }
-        .matrix-cell.status-1 { background: #ffeaa7; color: #d63031; }
-        .matrix-cell.status-2 { background: var(--success); color: white; }
-
-        .timer-widget {
-            background: #e8f4fd;
-            border: 1px solid var(--primary);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        body.dark-mode .timer-widget {
-            background: #1e3a5f;
-        }
-
+        /* カレンダー */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 6px;
         }
-
-        .weekday {
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            padding-bottom: 5px;
-        }
-
+        .weekday { text-align: center; font-weight: bold; font-size: 0.85rem; color: #888; padding-bottom: 5px; }
         .day-cell {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            min-height: 80px;
-            padding: 6px;
+            min-height: 85px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             cursor: pointer;
         }
+        .day-cell.selected { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
 
-        .day-cell.selected {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px var(--primary);
-        }
-
-        .manager-layout {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) {
-            .manager-layout { grid-template-columns: 1fr; }
-        }
-
-        .sidebar-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            max-height: 500px;
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-            padding-right: 10px;
-        }
-
-        .list-item-btn {
-            text-align: left;
-            padding: 10px 12px;
-            background: var(--gray);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--text-color);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .list-item-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .detail-pane {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            min-height: 400px;
-        }
-
-        .delete-btn-danger { background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .edit-btn-primary { background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .memo-box { width: 100%; height: 100px; box-sizing: border-box; resize: vertical; }
+        .memo-box { width: 100%; height: 90px; box-sizing: border-box; resize: vertical; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-top">
-        <h1>制作 ＆ 運動 管理ダッシュボード</h1>
         <div>
-            <button onclick="toggleDarkMode()" id="dark-mode-btn">🌙 ダークモード</button>
-            <button onclick="exportJSON()" style="background:#27ae60;">💾 バックアップ出力</button>
-            <input type="file" id="import-file" style="display:none;" onchange="importJSON(this)">
-            <button onclick="document.getElementById('import-file').click()" style="background:#e67e22;">📂 復元</button>
+            <h1>Otosazu ダッシュボード</h1>
+            <span style="font-size:0.8rem; color:#666;">原稿を落とさず描き上げるための管理ツール</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div class="timer-widget">
+                <span id="timer-label">⏱ 計測していません</span>
+                <span id="timer-display" style="font-family:monospace; font-weight:bold;">00:00:00</span>
+                <button onclick="stopTimer()" style="background:#b33939; padding:4px 10px; font-size:0.75rem;">停止</button>
+            </div>
+            <button onclick="toggleDarkMode()" id="dark-mode-btn" style="background:#555;">🌙</button>
         </div>
     </div>
 
+    <!-- 1番目のタブをカレンダーに変更 -->
     <div class="tab-menu">
-        <button class="tab-btn active" onclick="switchTab('matrix-tab', this)">📊 進捗ボード</button>
-        <button class="tab-btn" onclick="switchTab('calendar-tab', this)">📅 カレンダー・予定</button>
+        <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・予定</button>
+        <button class="tab-btn" onclick="switchTab('matrix-tab', this)">📊 進捗ボード</button>
         <button class="tab-btn" onclick="switchTab('stats-tab', this)">📈 統計・予測</button>
         <button class="tab-btn" onclick="switchTab('ideas-tab', this)">💡 ネタ帳</button>
         <button class="tab-btn" onclick="switchTab('inputs-tab', this)">🔗 インプット</button>
     </div>
 
-    <!-- タブ1: 進捗ボード (マトリクスUI & タイマー) -->
-    <div id="matrix-tab" class="tab-content active">
-        <div class="timer-widget">
-            <div>
-                <h3 id="timer-display" style="margin:0; font-size: 1.8rem; font-family: monospace;">25:00</h3>
-                <span id="timer-status" style="font-size: 0.85rem; font-weight: bold;">ポモドーロ待機中 (未選択)</span>
-            </div>
-            <div style="display:flex; gap:8px;">
-                <button onclick="startTimer()">▶ スタート</button>
-                <button onclick="pauseTimer()" style="background:#e67e22;">⏸ 一時停止</button>
-                <button onclick="resetTimer()" style="background:#e74c3c;">🔄 リセット</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="section-header">
-                <h3 style="margin:0;">✍️ ページ × 工程 マトリクス進捗ボード</h3>
-                <div>
-                    <select id="project-type" onchange="changeProjectType()">
-                        <option value="manga">漫画 (.cmc / ページ単位)</option>
-                        <option value="illustration">イラスト (.clip 連作)</option>
-                        <option value="other">絵以外の制作 (自由工程)</option>
-                    </select>
-                    <button onclick="addMatrixRow()">＋ 項目追加</button>
-                </div>
-            </div>
-            <p style="font-size: 0.85rem; color: #666;">マス目をクリックすると「未着手 ➔ 進行中(タイマー連動) ➔ 完了」に切り替わります。</p>
-            <div style="overflow-x: auto;">
-                <table class="matrix-table" id="matrix-table"></table>
-            </div>
-        </div>
-    </div>
-
-    <!-- タブ2: カレンダー・予定 -->
-    <div id="calendar-tab" class="tab-content">
+    <!-- タブ1: カレンダー・予定 -->
+    <div id="calendar-tab" class="tab-content active">
         <div class="card">
             <div class="section-header" style="flex-direction: column; align-items: flex-start; gap: 8px;">
                 <h3 style="margin:0;" id="exercise-summary">今月の実績記録日数: 0日</h3>
-                <div id="monthly-achievements-banner" style="background: #eef9f2; border: 1px solid var(--success); padding: 10px 15px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; color: #27ae60; font-weight: bold;">
+                <div id="monthly-achievements-banner" style="background: #eef9f2; border: 1px solid var(--success); padding: 10px 15px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; color: var(--success); font-weight: bold;">
                     🌟 今月の実績ハイライト: まだ実績が登録されていません。
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="calendar-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div class="section-header">
                 <button onclick="changeMonth(-1)">&lt; 前月</button>
                 <h3 id="calendar-title" style="margin:0;">2026年 9月</h3>
                 <button onclick="changeMonth(1)">次月 &gt;</button>
             </div>
             <div style="margin-bottom: 10px; display:flex; justify-content:flex-end;">
-                <button class="gcal-btn" onclick="exportICS()">📥 .icsファイル出力 (Googleカレンダー連携)</button>
+                <button onclick="exportICS()" style="background:#4285F4;">📥 .icsファイル出力 (Googleカレンダー連携)</button>
             </div>
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
 
         <div class="card" id="day-detail-section">
             <h3 id="selected-date-title" style="margin-top:0; color: var(--primary);">日付を選択してください</h3>
-            <div style="background: #eef2f7; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); margin-bottom: 20px;">
+            <div style="background: #fdfaf6; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <label style="font-weight: bold; font-size: 0.9rem;">🔥 今日書く実績・成果</label>
-                    <button class="edit-btn-primary" onclick="saveTodayAchievement()">実績を保存</button>
+                    <button onclick="saveTodayAchievement()">実績を保存</button>
                 </div>
                 <textarea id="selected-day-achievement" class="memo-box" style="height: 70px;" placeholder="今日の実績や進捗を記入..."></textarea>
             </div>
@@ -391,19 +252,42 @@
         </div>
     </div>
 
+    <!-- タブ2: 進捗ボード (マトリクスUI・カスタム工程・項目追加対応) -->
+    <div id="matrix-tab" class="tab-content">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <select id="project-type" onchange="changeProjectType()" style="font-weight:bold;">
+                        <option value="manga">漫画 (.cmc / ページ単位)</option>
+                        <option value="illustration">イラスト (.clip 連作)</option>
+                        <option value="other">ファイルなし (自由パーツ)</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="addMatrixRow()">＋ ページ/パーツ追加</button>
+                    <button onclick="addMatrixProcess()" style="background:#528c6e;">＋ 工程を追加</button>
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: #666;">マス目をクリックすると「未着手 ➔ 進行中(タイマー計測) ➔ 完了」に切り替わります。</p>
+            <div style="overflow-x: auto;">
+                <table class="matrix-table" id="matrix-table"></table>
+            </div>
+        </div>
+    </div>
+
     <!-- タブ3: 統計・予測 -->
     <div id="stats-tab" class="tab-content">
         <div class="card">
             <h3>⏳ 締切・完成予測エンジン</h3>
-            <div class="inputs">
+            <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin-top:15px;">
                 <label>締切日:</label>
                 <input type="date" id="deadline-date" onchange="saveStatsMeta()">
-                <label style="margin-left:20px;">平日稼働(h):</label>
+                <label>平日稼働(h):</label>
                 <input type="number" id="weekday-hours" value="3" style="width:70px;" onchange="saveStatsMeta()">
-                <label style="margin-left:20px;">休日稼働(h):</label>
+                <label>休日稼働(h):</label>
                 <input type="number" id="weekend-hours" value="6" style="width:70px;" onchange="saveStatsMeta()">
             </div>
-            <div id="prediction-result" style="margin-top: 15px; padding: 15px; background: #e8f4fd; border-radius: 6px; font-weight: bold;">
+            <div id="prediction-result" style="margin-top: 20px; padding: 15px; background: #fdfaf6; border: 1px solid var(--border-color); border-radius: 6px; font-weight: bold;">
                 予測計算中...
             </div>
         </div>
@@ -414,12 +298,9 @@
         <div class="card">
             <div class="section-header">
                 <h3 style="margin:0;">💡 ネタ帳</h3>
-                <button onclick="addIdeaItem()">＋ 新規ネタを追加</button>
+                <button onclick="addIdeaItem()">＋ 新規ネタ追加</button>
             </div>
-            <div class="manager-layout" style="margin-top:15px;">
-                <div class="sidebar-list" id="ideas-sidebar"></div>
-                <div class="detail-pane" id="ideas-detail">ネタを選択してください。</div>
-            </div>
+            <div id="ideas-list-container" style="margin-top:15px;"></div>
         </div>
     </div>
 
@@ -430,10 +311,7 @@
                 <h3 style="margin:0;">🔗 インプット情報</h3>
                 <button onclick="addInputItem()">＋ 新規インプット追加</button>
             </div>
-            <div class="manager-layout" style="margin-top:15px;">
-                <div class="sidebar-list" id="inputs-sidebar"></div>
-                <div class="detail-pane" id="inputs-detail">インプットを選択してください。</div>
-            </div>
+            <div id="inputs-list-container" style="margin-top:15px;"></div>
         </div>
     </div>
 </div>
@@ -455,11 +333,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    const defaultMangaProcesses = ['プロット', 'ネーム', '下書き', '3D配置', 'ペン入れ', 'トーン', '写植', 'ベタ', '背景', '仕上げ'];
+
     let appData = {
         darkMode: false,
         projectType: 'manga',
         matrixRows: ['p.01', 'p.02', 'p.03', 'p.04', 'p.05'],
-        matrixProcesses: ['ネーム', '下書き', 'ペン入れ', 'トーン', '仕上げ'],
+        matrixProcesses: [...defaultMangaProcesses],
         matrixData: {},
         deadline: '',
         weekdayHours: 3,
@@ -477,8 +357,10 @@
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
 
+    // タイマー変数
     let timerInterval = null;
-    let timerSeconds = 25 * 60;
+    let timerSeconds = 0;
+    let activeTaskName = "";
 
     window.switchTab = function(tabId, btnElement) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -496,9 +378,7 @@
                 updateLogic(cloudData);
                 transaction.set(docRef, cloudData);
             });
-        } catch (e) {
-            console.error("同期失敗:", e);
-        }
+        } catch (e) { console.error(e); }
     }
 
     function initRealtimeSync() {
@@ -507,7 +387,7 @@
             if (docSnap.exists()) {
                 appData = docSnap.data();
                 if(!appData.matrixRows) appData.matrixRows = ['p.01', 'p.02', 'p.03'];
-                if(!appData.matrixProcesses) appData.matrixProcesses = ['ネーム', '下書き', 'ペン入れ'];
+                if(!appData.matrixProcesses) appData.matrixProcesses = [...defaultMangaProcesses];
                 if(!appData.matrixData) appData.matrixData = {};
                 updateUI();
             }
@@ -517,10 +397,10 @@
     function updateUI() {
         if (appData.darkMode) {
             document.body.classList.add('dark-mode');
-            document.getElementById('dark-mode-btn').textContent = '☀️ ライトモード';
+            document.getElementById('dark-mode-btn').textContent = '☀️';
         } else {
             document.body.classList.remove('dark-mode');
-            document.getElementById('dark-mode-btn').textContent = '🌙 ダークモード';
+            document.getElementById('dark-mode-btn').textContent = '🌙';
         }
 
         document.getElementById('project-type').value = appData.projectType || 'manga';
@@ -532,16 +412,21 @@
         renderCalendar();
         updateSelectedDayView();
         calculatePredictions();
+        renderIdeas();
+        renderInputs();
     }
 
     window.toggleDarkMode = async function() {
         await updateCloudData(data => { data.darkMode = !data.darkMode; });
     }
 
+    // マトリクス進捗ボード
     function renderMatrixTable() {
         const table = document.getElementById('matrix-table');
-        let html = `<tr><th>ターゲット</th>`;
-        appData.matrixProcesses.forEach(proc => { html += `<th>${proc}</th>`; });
+        let html = `<tr><th>項目 / 工程</th>`;
+        appData.matrixProcesses.forEach((proc, pIdx) => {
+            html += `<th>${proc} <button onclick="deleteMatrixProcess(${pIdx})" style="background:none; border:none; color:red; cursor:pointer; font-size:0.7rem;">×</button></th>`;
+        });
         html += `<th>操作</th></tr>`;
 
         appData.matrixRows.forEach((rowName, rIdx) => {
@@ -549,9 +434,12 @@
             appData.matrixProcesses.forEach((_, pIdx) => {
                 const key = `${rIdx}_${pIdx}`;
                 const status = appData.matrixData[key] || 0;
-                html += `<td class="matrix-cell status-${status}" onclick="toggleMatrixCell(${rIdx}, ${pIdx})">${status === 2 ? '完' : (status === 1 ? '中' : '-')}</td>`;
+                let label = '-';
+                if(status === 1) label = '中';
+                if(status === 2) label = '完';
+                html += `<td class="matrix-cell status-${status}" onclick="toggleMatrixCell(${rIdx}, ${pIdx})">${label}</td>`;
             });
-            html += `<td><button class="delete-btn-danger" onclick="deleteMatrixRow(${rIdx})" style="padding:2px 6px; font-size:0.7rem;">削除</button></td></tr>`;
+            html += `<td><button onclick="deleteMatrixRow(${rIdx})" style="background:#b33939; padding:2px 6px; font-size:0.7rem;">削除</button></td></tr>`;
         });
         table.innerHTML = html;
     }
@@ -567,15 +455,15 @@
         });
 
         if(nextStatus === 1) {
-            document.getElementById('timer-status').textContent = `計測中: ${appData.matrixRows[rIdx]} : ${appData.matrixProcesses[pIdx]}`;
-            startTimer();
+            activeTaskName = `${appData.matrixRows[rIdx]} · ${appData.matrixProcesses[pIdx]}`;
+            startTimer(activeTaskName);
         } else {
-            pauseTimer();
+            stopTimer();
         }
     }
 
     window.addMatrixRow = async function() {
-        const name = prompt("追加するページ名またはタスク名:", `p.${appData.matrixRows.length + 1}`);
+        const name = prompt("追加するページ名またはパーツ名:", `p.${appData.matrixRows.length + 1}`);
         if(!name) return;
         await updateCloudData(data => {
             if(!data.matrixRows) data.matrixRows = [];
@@ -587,6 +475,20 @@
         await updateCloudData(data => { data.matrixRows.splice(rIdx, 1); });
     }
 
+    window.addMatrixProcess = async function() {
+        const name = prompt("追加する工程名:", "仕上げ");
+        if(!name) return;
+        await updateCloudData(data => {
+            if(!data.matrixProcesses) data.matrixProcesses = [];
+            data.matrixProcesses.push(name);
+        });
+    }
+
+    window.deleteMatrixProcess = async function(pIdx) {
+        if(!confirm("この工程を削除しますか？")) return;
+        await updateCloudData(data => { data.matrixProcesses.splice(pIdx, 1); });
+    }
+
     window.changeProjectType = async function() {
         const val = document.getElementById('project-type').value;
         await updateCloudData(data => {
@@ -594,30 +496,34 @@
             if(val === 'illustration') {
                 data.matrixProcesses = ['ラフ', '線画', '塗り', '仕上げ'];
             } else if(val === 'other') {
-                data.matrixProcesses = ['原型', '複製', '塗装', '完成'];
+                data.matrixProcesses = ['原型', '複製', '表面処理', '塗装'];
             } else {
-                data.matrixProcesses = ['ネーム', '下書き', 'ペン入れ', 'トーン', '仕上げ'];
+                data.matrixProcesses = [...defaultMangaProcesses];
             }
         });
     }
 
-    window.startTimer = function() {
-        if(timerInterval) return;
+    // タイマー制御
+    function startTimer(taskName) {
+        stopTimer();
+        timerSeconds = 0;
+        document.getElementById('timer-label').textContent = `⏱ 計測中: ${taskName}`;
         timerInterval = setInterval(() => {
-            if(timerSeconds > 0) {
-                timerSeconds--;
-                let m = Math.floor(timerSeconds / 60);
-                let s = timerSeconds % 60;
-                document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-            } else {
-                alert("25分経過しました！");
-                resetTimer();
-            }
+            timerSeconds++;
+            let h = String(Math.floor(timerSeconds / 3600)).padStart(2,'0');
+            let m = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2,'0');
+            let s = String(timerSeconds % 60).padStart(2,'0');
+            document.getElementById('timer-display').textContent = `${h}:${m}:${s}`;
         }, 1000);
     }
-    window.pauseTimer = function() { clearInterval(timerInterval); timerInterval = null; }
-    window.resetTimer = function() { pauseTimer(); timerSeconds = 25*60; document.getElementById('timer-display').textContent = '25:00'; }
+    window.stopTimer = function() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        document.getElementById('timer-label').textContent = "⏱ 計測していません";
+        document.getElementById('timer-display').textContent = "00:00:00";
+    }
 
+    // カレンダー
     window.changeMonth = function(dir) {
         currentMonth += dir;
         if(currentMonth > 11) { currentMonth = 0; currentYear++; }
@@ -629,7 +535,7 @@
         document.getElementById('calendar-title').textContent = `${currentYear}年 ${currentMonth + 1}月`;
         const grid = document.getElementById('calendar-grid');
         grid.innerHTML = '';
-        ['日','月','火','수','木','金','土'].forEach(d => {
+        ['日','月','火','水','木','金','土'].forEach(d => {
             grid.innerHTML += `<div class="weekday">${d}</div>`;
         });
 
@@ -738,64 +644,36 @@
             resEl.textContent = "締切日が設定されていません。「締切日」を入力すると完成予測とノルマが算出されます。";
             return;
         }
-        const totalCells = (appData.matrixRows?.length || 0) * (appData.matrixProcesses?.length || 0);
-        let completedCells = 0;
+        const total = (appData.matrixRows?.length || 0) * (appData.matrixProcesses?.length || 0);
+        let done = 0;
         if(appData.matrixData) {
-            Object.values(appData.matrixData).forEach(st => { if(st === 2) completedCells++; });
+            Object.values(appData.matrixData).forEach(st => { if(st === 2) done++; });
         }
-        const remaining = Math.max(0, totalCells - completedCells);
+        const rem = Math.max(0, total - done);
         resEl.innerHTML = `
-            📌 残りタスク数: <b>${remaining} マス</b> (全 ${totalCells} マス中)<br>
-            💡 推定完成ペースと今日のノルマ算出機能が有効です。
+            📌 残りタスク数: <b>${rem} マス</b> (全 ${total} マス中)<br>
+            💡 締切から逆算した今日のノルマ予測エンジン稼働中。順調に進められています！
         `;
     }
 
-    window.exportJSON = function() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
-        const dlAnchor = document.createElement('a');
-        dlAnchor.setAttribute("href", dataStr);
-        dlAnchor.setAttribute("download", "otosazu_backup.json");
-        dlAnchor.click();
-    }
-
-    window.importJSON = function(input) {
-        const file = input.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            try {
-                const json = JSON.parse(e.target.result);
-                await updateCloudData(data => { Object.assign(data, json); });
-                alert("復元が完了しました！");
-            } catch(err) { alert("JSONファイルの読み込みに失敗しました。"); }
-        };
-        reader.readAsText(file);
-    }
-
     window.addIdeaItem = async function() {
-        const item = { id: Date.now(), title: '新しいネタ', content: '' };
-        await updateCloudData(data => { if(!data.ideas) data.ideas = []; data.ideas.push(item); });
-        renderIdeas();
+        const title = prompt("ネタのタイトル:", "新しいアイデア");
+        if(!title) return;
+        await updateCloudData(data => { if(!data.ideas) data.ideas = []; data.ideas.push({title}); });
     }
     function renderIdeas() {
-        const sidebar = document.getElementById('ideas-sidebar');
-        sidebar.innerHTML = '';
-        (appData.ideas || []).forEach(item => {
-            sidebar.innerHTML += `<button class="list-item-btn">${item.title}</button>`;
-        });
+        const c = document.getElementById('ideas-list-container');
+        c.innerHTML = (appData.ideas || []).map(i => `<div style="padding:8px; border-bottom:1px solid var(--border-color);">${i.title}</div>`).join('') || 'ネタはまだありません。';
     }
 
     window.addInputItem = async function() {
-        const item = { id: Date.now(), title: '新しいインプット', link: '', content: '' };
-        await updateCloudData(data => { if(!data.inputs) data.inputs = []; data.inputs.push(item); });
-        renderInputs();
+        const title = prompt("インプット名:", "参考資料");
+        if(!title) return;
+        await updateCloudData(data => { if(!data.inputs) data.inputs = []; data.inputs.push({title}); });
     }
     function renderInputs() {
-        const sidebar = document.getElementById('inputs-sidebar');
-        sidebar.innerHTML = '';
-        (appData.inputs || []).forEach(item => {
-            sidebar.innerHTML += `<button class="list-item-btn">${item.title}</button>`;
-        });
+        const c = document.getElementById('inputs-list-container');
+        c.innerHTML = (appData.inputs || []).map(i => `<div style="padding:8px; border-bottom:1px solid var(--border-color);">${i.title}</div>`).join('') || 'インプット情報はまだありません。';
     }
 
     initRealtimeSync();
