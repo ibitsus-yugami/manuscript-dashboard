@@ -25,7 +25,6 @@
         }
 
         .container { max-width: 1100px; margin: 0 auto; }
-
         h1 { font-size: 1.5rem; margin-bottom: 15px; color: #2c3e50; }
 
         .tab-menu {
@@ -79,7 +78,6 @@
 
         .gcal-btn { background-color: #4285F4; }
 
-        /* マトリクスボード */
         .matrix-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; display: block; overflow-x: auto; }
         .matrix-table th, .matrix-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; white-space: nowrap; }
         .matrix-table th { background: var(--gray); color: var(--text-color); }
@@ -131,9 +129,6 @@
         .overview-title { font-size: 1.1rem; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
         .overview-link { display: inline-block; margin-bottom: 10px; color: var(--primary); word-break: break-all; font-size: 0.85rem; }
         .img-preview-container { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
-        .img-thumb-wrap { position: relative; display: inline-block; }
-        .uploaded-img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; }
-        .img-delete-btn { position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .file-name-display { font-size: 0.8rem; color: #2980b9; margin-top: 4px; font-weight: bold; }
 
         #image-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
@@ -146,7 +141,6 @@
 <div class="container">
     <h1>制作 ＆ 運動 管理ダッシュボード</h1>
 
-    <!-- タブメニュー（1番目カレンダー、2番目進捗ボード、3番目原稿進捗、4番目ネタ帳、5番目インプット） -->
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('calendar-tab', this)">📅 カレンダー・習慣</button>
         <button class="tab-btn" onclick="switchTab('matrix-tab', this)">📊 進捗ボード</button>
@@ -155,7 +149,7 @@
         <button class="tab-btn" onclick="switchTab('inputs-tab', this)">🔗 インプット</button>
     </div>
 
-    <!-- タブ1: カレンダー・習慣エリア -->
+    <!-- タブ1: カレンダー -->
     <div id="calendar-tab" class="tab-content active">
         <div class="card">
             <div class="section-header" style="flex-direction: column; align-items: flex-start; gap: 8px;">
@@ -197,7 +191,7 @@
                     <div id="remipan-edit-container" style="display: none;">
                         <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力（画像ペーストもOK）..." onpaste="handleDayPaste(event, 'remipan')"></textarea>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
+                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可):</label>
                             <input type="file" id="remipan-file-input" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
                             <div id="remipan-file-name" class="file-name-display">選択されていません</div>
                         </div>
@@ -218,7 +212,7 @@
                     <div id="yukun-edit-container" style="display: none;">
                         <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力（画像ペーストもOK）..." onpaste="handleDayPaste(event, 'yukun')"></textarea>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可・一括選択OK):</label>
+                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可):</label>
                             <input type="file" id="yukun-file-input" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
                             <div id="yukun-file-name" class="file-name-display">選択されていません</div>
                         </div>
@@ -289,15 +283,14 @@
         </div>
     </div>
 
-    <!-- タブ4: ネタ帳エリア -->
+    <!-- タブ4: ネタ帳 -->
     <div id="ideas-tab" class="tab-content">
         <div class="card">
             <div class="section-header">
                 <h3 style="margin:0;">💡 ネタ帳</h3>
                 <button onclick="addIdeaItem()">＋ 新規ネタを追加</button>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると詳細概要の確認・編集が行えます。</p>
-            
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると詳細確認・編集が行えます。</p>
             <div class="manager-layout">
                 <div class="sidebar-list" id="ideas-sidebar"></div>
                 <div class="detail-pane" id="ideas-detail">
@@ -307,26 +300,24 @@
         </div>
     </div>
 
-    <!-- タブ5: インプットエリア -->
+    <!-- タブ5: インプット -->
     <div id="inputs-tab" class="tab-content">
         <div class="card">
             <div class="section-header">
                 <h3 style="margin:0;">🔗 インプット情報</h3>
                 <button onclick="addInputItem()">＋ 新規インプットを追加</button>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択するとリンクや詳細内容、画像を確認・編集できます。</p>
-            
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると確認・編集できます。</p>
             <div class="manager-layout">
                 <div class="sidebar-list" id="inputs-sidebar"></div>
                 <div class="detail-pane" id="inputs-detail">
-                    <p style="color: #888; text-align: center; margin-top: 100px;">左側からインプット項目を選択するか、新しく追加してください。</p>
+                    <p style="color: #888; text-align: center; margin-top: 100px;">左側からインプット項目を選択してください。</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 画像クローズアップ用モーダル -->
 <div id="image-modal" onclick="closeImageModal()">
     <span onclick="closeImageModal()">&times;</span>
     <img id="modal-img">
@@ -444,315 +435,3 @@
                 appData.day_images_yukun = cloudData.day_images_yukun ?? {};
                 appData.ideas = cloudData.ideas ?? [];
                 appData.inputs = cloudData.inputs ?? [];
-
-                if (appData.ideas.length > 0 && (activeIdeaId === null || !appData.ideas.some(i => i.id === activeIdeaId))) {
-                    activeIdeaId = appData.ideas[0].id;
-                } else if (appData.ideas.length === 0) {
-                    activeIdeaId = null;
-                }
-
-                if (appData.inputs.length > 0 && (activeInputId === null || !appData.inputs.some(i => i.id === activeInputId))) {
-                    activeInputId = appData.inputs[0].id;
-                } else if (appData.inputs.length === 0) {
-                    activeInputId = null;
-                }
-
-                updateUI();
-            }
-        });
-    }
-
-    function updateUI() {
-        const selectors = [document.getElementById('matrix-project-selector'), document.getElementById('manuscript-project-selector')];
-        selectors.forEach(selector => {
-            if (!selector) return;
-            selector.innerHTML = '';
-            for (const [pId, pObj] of Object.entries(appData.projects)) {
-                const opt = document.createElement('option');
-                opt.value = pId;
-                opt.textContent = pObj.name;
-                if (pId === appData.currentProjectId) opt.selected = true;
-                selector.appendChild(opt);
-            }
-        });
-
-        const currentProj = appData.projects[appData.currentProjectId] || Object.values(appData.projects)[0];
-
-        const deadlineInput = document.getElementById('deadline-date');
-        if (deadlineInput && document.activeElement !== deadlineInput) {
-            deadlineInput.value = currentProj.deadline || '';
-        }
-        const memoInput = document.getElementById('manuscript-memo');
-        if (memoInput && document.activeElement !== memoInput) {
-            memoInput.value = currentProj.memo || '';
-        }
-
-        renderMatrixTable();
-        renderProcessBars(currentProj);
-        updateCountdown(currentProj.deadline);
-        renderCalendar();
-        updateSelectedDayView();
-        renderIdeasManager();
-        renderInputsManager();
-    }
-
-    window.switchProject = async function(pId) {
-        await updateCloudData(data => {
-            data.currentProjectId = pId;
-        });
-    }
-
-    window.addNewProject = async function() {
-        const name = prompt("新しい作品名を入力してください:", "新しい作品");
-        if (!name) return;
-        const newId = 'project_' + Date.now();
-        await updateCloudData(data => {
-            if (!data.projects) data.projects = {};
-            data.projects[newId] = {
-                name: name,
-                deadline: '',
-                memo: '',
-                matrixRows: ['p.01', 'p.02', 'p.03'],
-                matrixProcesses: [...defaultMangaProcesses],
-                matrixData: {}
-            };
-            data.currentProjectId = newId;
-        });
-    }
-
-    window.editCurrentProjectName = async function() {
-        const currentProj = appData.projects[appData.currentProjectId];
-        if (!currentProj) return;
-        const newName = prompt("作品名を編集:", currentProj.name);
-        if (!newName) return;
-        await updateCloudData(data => {
-            data.projects[data.currentProjectId].name = newName;
-        });
-    }
-
-    window.deleteCurrentProject = async function() {
-        const pIds = Object.keys(appData.projects);
-        if (pIds.length <= 1) {
-            alert("最後の作品は削除できません。");
-            return;
-        }
-        if (!confirm("本当にこの作品を削除しますか？")) return;
-        await updateCloudData(data => {
-            delete data.projects[data.currentProjectId];
-            data.currentProjectId = Object.keys(data.projects)[0];
-        });
-    }
-
-    function renderMatrixTable() {
-        const currentProj = appData.projects[appData.currentProjectId];
-        if (!currentProj) return;
-
-        const table = document.getElementById('matrix-table');
-        let html = `<tr><th>項目 / 工程</th>`;
-        (currentProj.matrixProcesses || []).forEach((proc, pIdx) => {
-            html += `<th>${proc} <button onclick="deleteMatrixProcess(${pIdx})" style="background:none; border:none; color:red; cursor:pointer; font-size:0.7rem;" title="工程削除">×</button></th>`; }); html += `<th>操作</th></tr>`;  (currentProj.matrixRows \vert{}\vert{} []).forEach((rowName, rIdx) => { html += `<tr><td><b>${rowName}</b></td>`;
-            (currentProj.matrixProcesses || []).forEach((_, pIdx) => {
-                const key = `${rIdx}_${pIdx}`;
-                const status = (currentProj.matrixData && currentProj.matrixData[key]) || 0;
-                let label = '-';
-                if(status === 1) label = '中';
-                if(status === 2) label = '完';
-                html += `<td class="matrix-cell status-${status}" onclick="toggleMatrixCell(${rIdx}, ${pIdx})">${label}</td>`;
-            });
-            html += `<td><button class="delete-btn-danger" onclick="deleteMatrixRow(${rIdx})" style="padding:2px 6px; font-size:0.7rem;">削除</button></td></tr>`; }); table.innerHTML = html; }  window.toggleMatrixCell = async function(rIdx, pIdx) { const key = `${rIdx}_${pIdx}`; await updateCloudData(data => { const proj = data.projects[data.currentProjectId]; if (!proj.matrixData) proj.matrixData = {}; let currentStatus = proj.matrixData[key] \vert{}\vert{} 0; proj.matrixData[key] = (currentStatus + 1) \% 3; }); }  window.addMatrixRow = async function() { const name = prompt("追加するページ名またはパーツ名:", `p.${appData.projects[appData.currentProjectId].matrixRows.length + 1}`);
-        if(!name) return;
-        await updateCloudData(data => {
-            const proj = data.projects[data.currentProjectId];
-            if(!proj.matrixRows) proj.matrixRows = [];
-            proj.matrixRows.push(name);
-        });
-    }
-
-    window.deleteMatrixRow = async function(rIdx) {
-        await updateCloudData(data => {
-            const proj = data.projects[data.currentProjectId];
-            if(proj.matrixRows) proj.matrixRows.splice(rIdx, 1);
-        });
-    }
-
-    window.addMatrixProcess = async function() {
-        const name = prompt("追加する工程名:", "新しい工程");
-        if(!name) return;
-        await updateCloudData(data => {
-            const proj = data.projects[data.currentProjectId];
-            if(!proj.matrixProcesses) proj.matrixProcesses = [];
-            proj.matrixProcesses.push(name);
-        });
-    }
-
-    window.deleteMatrixProcess = async function(pIdx) {
-        if(!confirm("この工程を削除しますか？")) return;
-        await updateCloudData(data => {
-            const proj = data.projects[data.currentProjectId];
-            if(proj.matrixProcesses) proj.matrixProcesses.splice(pIdx, 1);
-        });
-    }
-
-    function renderProcessBars(proj) {
-        const container = document.getElementById('process-bars-container');
-        container.innerHTML = '';
-
-        const rows = proj.matrixRows || [];
-        const processes = proj.matrixProcesses || [];
-        const totalRows = rows.length;
-        if (totalRows === 0 || processes.length === 0) {
-            container.innerHTML = '<p style="color:#888;">タスクや工程が登録されていません。</p>';
-            document.getElementById('manuscript-bar').value = 0;
-            document.getElementById('manuscript-text').textContent = '0%';
-            return;
-        }
-
-        let totalCompletedCells = 0;
-        let totalCells = totalRows * processes.length;
-
-        processes.forEach((proc, pIdx) => {
-            let completedCount = 0;
-            rows.forEach((_, rIdx) => {
-                const key = `${rIdx}_${pIdx}`;
-                if (proj.matrixData && proj.matrixData[key] === 2) {
-                    completedCount++;
-                    totalCompletedCells++;
-                }
-            });
-
-            const percent = Math.round((completedCount / totalRows) * 100);
-
-            const rowDiv = document.createElement('div');
-            rowDiv.style.marginBottom = '12px';
-            rowDiv.innerHTML = `
-                <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:bold; margin-bottom:4px;">
-                    <span>${proc}</span>
-                    <span>${completedCount} / ${totalRows} (${percent}%)</span>
-                </div>
-                <progress value="${completedCount}" max="${totalRows}"></progress>
-            `;
-            container.appendChild(rowDiv);
-        });
-
-        const overallPercent = Math.round((totalCompletedCells / totalCells) * 100);
-        document.getElementById('manuscript-bar').value = overallPercent;
-        document.getElementById('manuscript-text').textContent = `${overallPercent}%`;
-    }
-
-    window.saveManuscriptMeta = async function() {
-        const deadline = document.getElementById('deadline-date').value;
-        const memo = document.getElementById('manuscript-memo').value;
-        await updateCloudData(data => {
-            const proj = data.projects[data.currentProjectId];
-            proj.deadline = deadline;
-            proj.memo = memo;
-        });
-    }
-
-    function updateCountdown(deadlineStr) {
-        const countdownEl = document.getElementById('countdown-text');
-        if (!deadlineStr) {
-            countdownEl.textContent = '';
-            return;
-        }
-        const deadlineDate = new Date(deadlineStr);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const diffTime = deadlineDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays > 0) {
-            countdownEl.textContent = `あと ${diffDays} 日`; } else if (diffDays === 0) { countdownEl.textContent = `本日の締め切りです！`; } else { countdownEl.textContent = `締め切りを ${Math.abs(diffDays)} 日過ぎています`;
-        }
-    }
-
-    window.openGCalDeadline = function() {
-        const currentProj = appData.projects[appData.currentProjectId];
-        const deadline = currentProj.deadline;
-        const memo = (currentProj.memo || '').trim();
-        let eventTitle = memo ? memo.split('\n')[0] : currentProj.name + " 締め切り";
-        const text = encodeURIComponent(eventTitle);
-        const details = encodeURIComponent(`【詳細メモ】\n${memo}`); let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&details=${details}`;  if (deadline) { const dStr = deadline.replace(/-/g, ''); const dObj = new Date(deadline); dObj.setDate(dObj.getDate() + 1); const nextDStr = dObj.toISOString().slice(0, 10).replace(/-/g, ''); url += `&dates=${dStr}/${nextDStr}`; } else { alert('締め切り日が設定されていません。'); return; } window.open(url, '_blank'); }  let currentYear = new Date().getFullYear(); let currentMonth = new Date().getMonth();  window.changeMonth = function(direction) { currentMonth += direction; if (currentMonth > 11) { currentMonth = 0; currentYear++; } else if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); }  function renderCalendar() { const title = document.getElementById('calendar-title'); title.textContent = `${currentYear}年 ${currentMonth + 1}月`;  const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';  const weekdays = ['日', '月', '火', '水', '木', '金', '土']; weekdays.forEach(day => { const div = document.createElement('div'); div.className = 'weekday'; div.textContent = day; grid.appendChild(div); });  const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay(); const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();  for (let i = 0; i < firstDayIndex; i++) { const div = document.createElement('div'); div.className = 'day-cell'; div.style.background = '#f0f0f0'; div.style.cursor = 'default'; grid.appendChild(div); }  let exerciseCount = 0; let latestAchievementText = "まだ今月の実績は登録されていません。"; let latestAchievementDate = "";  for (let day = 1; day <= lastDay; day++) { const cell = document.createElement('div'); cell.className = 'day-cell';  if (currentYear === selectedYear && (currentMonth + 1) === selectedMonth && day === selectedDay) { cell.classList.add('selected'); }  cell.onclick = (e) => { if (e.target.tagName === 'BUTTON') return; selectedYear = currentYear; selectedMonth = currentMonth + 1; selectedDay = day; isRemipanEditing = false; isYukunEditing = false; renderCalendar(); updateSelectedDayView(); };  const headerRow = document.createElement('div'); headerRow.className = 'day-header-row';  const num = document.createElement('span'); num.className = 'day-number'; num.textContent = day; headerRow.appendChild(num);  const currentProj = appData.projects[appData.currentProjectId]; const deadlineStr = currentProj ? currentProj.deadline : ''; if (deadlineStr) { const dDate = new Date(deadlineStr); if (dDate.getFullYear() === currentYear && (dDate.getMonth() + 1) === (currentMonth + 1) && dDate.getDate() === day) { const badge = document.createElement('span'); badge.className = 'deadline-badge'; badge.textContent = '締切'; headerRow.appendChild(badge); } }  cell.appendChild(headerRow);  const container = document.createElement('div'); container.className = 'trackers-container';  const exKey = `exercise_${currentYear}_${currentMonth + 1}_${day}`;
-            const exStatus = (appData.trackers && appData.trackers[exKey]) || 'none';
-            if (exStatus === 'maru') exerciseCount++;
-            container.appendChild(createTrackerRow('運', exKey, exStatus, currentYear, currentMonth + 1, day, '運動'));
-
-            const workKey = `work_${currentYear}_${currentMonth + 1}_${day}`; const workStatus = (appData.trackers && appData.trackers[workKey]) \vert{}\vert{} 'none'; container.appendChild(createTrackerRow('制', workKey, workStatus, currentYear, currentMonth + 1, day, '制作'));  cell.appendChild(container); grid.appendChild(cell);  const achKey = `ach_${currentYear}_${currentMonth + 1}_${day}`;
-            if (appData.day_achievements && appData.day_achievements[achKey] && appData.day_achievements[achKey].trim() !== '') {
-                latestAchievementText = appData.day_achievements[achKey];
-                latestAchievementDate = `${currentMonth + 1}月${day}日`;
-            }
-        }
-
-        document.getElementById('exercise-summary').textContent = `今月の運動達成日数: ${exerciseCount}日`;  const banner = document.getElementById('monthly-achievements-banner'); if (latestAchievementDate) { banner.innerHTML = `🌟 今月の最新実績 (${latestAchievementDate}): ${latestAchievementText}`; } else { banner.innerHTML = `🌟 今月の実績ハイライト: まだ今月の実績は登録されていません。日付を選んで実績を入力してみよう！`; } }  function updateSelectedDayView() { document.getElementById('selected-date-title').textContent = `📝 ${selectedYear}年${selectedMonth}月${selectedDay}日の記録・メモ`;
-        
-        const achKey = `ach_${selectedYear}_${selectedMonth}_${selectedDay}`; const todayAch = (appData.day_achievements && appData.day_achievements[achKey]) ? appData.day_achievements[achKey] : ''; const achInput = document.getElementById('selected-day-achievement'); if (achInput && document.activeElement !== achInput) { achInput.value = todayAch; }  const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        const remipanMemo = (appData.day_memos_remipan && appData.day_memos_remipan[memoKey]) || '';
-        const yukunMemo = (appData.day_memos_yukun && appData.day_memos_yukun[memoKey]) || '';
-
-        const remipanInput = document.getElementById('selected-day-memo-remipan');
-        if (remipanInput && document.activeElement !== remipanInput) {
-            remipanInput.value = remipanMemo;
-        }
-        const yukunInput = document.getElementById('selected-day-memo-yukun');
-        if (yukunInput && document.activeElement !== yukunInput) {
-            yukunInput.value = yukunMemo;
-        }
-
-        document.getElementById('remipan-file-name').textContent = '選択されていません';
-        document.getElementById('yukun-file-name').textContent = '選択されていません';
-
-        renderDaySection('remipan', remipanMemo);
-        renderDaySection('yukun', yukunMemo);
-    }
-
-    window.saveTodayAchievement = async function() {
-        const achVal = document.getElementById('selected-day-achievement').value;
-        const achKey = `ach_${selectedYear}_${selectedMonth}_${selectedDay}`; await updateCloudData(data => { if(!data.day_achievements) data.day_achievements = {}; data.day_achievements[achKey] = achVal; }); alert(`${selectedYear}年${selectedMonth}月${selectedDay}日の実績を保存しました！`);
-        renderCalendar();
-    }
-
-    function renderDaySection(type, memoText) {
-        const isEditing = (type === 'remipan') ? isRemipanEditing : isYukunEditing;
-        const viewContainer = document.getElementById(`${type}-view-container`); const editContainer = document.getElementById(`${type}-edit-container`);
-        const actionGroup = document.getElementById(`${type}-action-group`);  const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
-        const images = (targetObj && targetObj[imgKey]) || [];
-
-        if (!isEditing) {
-            editContainer.style.display = 'none';
-            viewContainer.style.display = 'block';
-
-            let actionHtml = `<button class="edit-btn-primary" onclick="toggleDayEdit('${type}')">編集する</button>`;
-            if (memoText.trim() !== '' || images.length > 0) {
-                actionHtml += `<button class="delete-btn-danger" onclick="clearDayData('${type}')">削除</button>`;
-            }
-            actionGroup.innerHTML = actionHtml;
-
-            let imgHtml = '';
-            images.forEach((imgSrc) => {
-                imgHtml += `
-                    <div class="img-thumb-wrap">
-                        <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
-                    </div>
-                `;
-            });
-
-            viewContainer.innerHTML = `
-                <div class="overview-box">${memoText ? memoText : '<span style="color:#aaa;">メモはありません</span>'}</div>
-                ${imgHtml ? `<div class="img-preview-container">${imgHtml}</div>` : ''}
-            `;
-        } else {
-            editContainer.style.display = 'block';
-            viewContainer.style.display = 'none';
-
-            let actionHtml = `<button class="delete-btn-danger" onclick="clearDayData('${type}')">削除</button>`;
-            actionGroup.innerHTML = actionHtml;
-
-            let imgHtml = '';
-            images.forEach((imgSrc, imgIdx) => {
-                imgHtml += `
-                    <div class="img-thumb-wrap">
-                        <img src="${imgSrc}" class="uploaded-img-preview" onclick="openImageModal('${imgSrc}')">
-                        <button class="img-delete-btn"
