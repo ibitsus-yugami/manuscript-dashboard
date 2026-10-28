@@ -16,26 +16,17 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --info: #3b82f6;
+            --purple: #8b5cf6;
             --gray: #1e222b;
             --hover-bg: #252b36;
         }
 
         /* スタイリッシュなカスタムスクロールバー（緑テーマ） */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-color);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #2a3441;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #2a3441; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -51,38 +42,19 @@
         h1 { font-size: 1.5rem; margin: 0; color: #f8fafc; font-weight: 700; letter-spacing: -0.02em; }
 
         .tab-menu {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 14px;
-            flex-wrap: wrap;
+            display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px; flex-wrap: wrap;
         }
 
         .tab-btn {
-            padding: 10px 18px;
-            background-color: var(--gray);
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
+            padding: 10px 18px; background-color: var(--gray); color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease;
         }
-
         .tab-btn:hover { color: var(--text-color); background: var(--hover-bg); border-color: var(--text-muted); }
         .tab-btn.active { background-color: var(--primary); color: #000; border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); font-weight: 700; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
@@ -92,54 +64,28 @@
         progress::-webkit-progress-value { background-color: var(--primary); border-radius: 4px; box-shadow: 0 0 10px var(--primary-glow); }
 
         input, select, textarea {
-            padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; font-family: inherit;
-            background: var(--bg-color); color: var(--text-color);
+            padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; font-family: inherit; background: var(--bg-color); color: var(--text-color);
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
 
         button {
-            padding: 10px 18px; background-color: var(--primary); color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem;
-            transition: all 0.2s;
+            padding: 10px 18px; background-color: var(--primary); color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: all 0.2s;
         }
         button:hover { opacity: 0.9; box-shadow: 0 0 12px var(--primary-glow); }
 
         .gcal-btn { background-color: #3b82f6 !important; color: #fff !important; }
 
-        /* スタイリッシュ・スクロールマトリクスボード */
         .matrix-container {
-            max-height: 500px;
-            overflow-y: auto;
-            overflow-x: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-top: 12px;
+            max-height: 500px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 12px;
         }
         .matrix-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .matrix-table th, .matrix-table td { border: 1px solid var(--border-color); padding: 12px; text-align: center; white-space: nowrap; background: var(--card-bg); }
-        .matrix-table th { 
-            background: var(--gray); 
-            color: var(--text-color); 
-            font-weight: 600; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10; 
-        }
+        .matrix-table th { background: var(--gray); color: var(--text-color); font-weight: 600; position: sticky; top: 0; z-index: 10; }
         .matrix-table th:first-child { left: 0; z-index: 20; }
         .matrix-table td:first-child { position: sticky; left: 0; background: var(--card-bg); z-index: 5; font-weight: 600; }
 
-        /* ステータスバッジボタン */
         .status-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-            min-width: 65px;
+            display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; min-width: 65px;
         }
         .status-badge.status-0 { background: var(--gray); color: var(--text-muted); border-color: var(--border-color); }
         .status-badge.status-0:hover { border-color: var(--text-muted); color: var(--text-color); }
@@ -162,18 +108,25 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
         .weekday { text-align: center; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); padding-bottom: 8px; }
         .day-cell {
-            background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; min-height: 90px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s;
+            background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; min-height: 100px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s;
         }
         .day-cell:hover { background: var(--hover-bg); border-color: var(--primary); }
         .day-cell.selected { border-color: var(--primary); background: #182232; box-shadow: 0 0 10px var(--primary-glow); }
         .day-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px; }
         .day-number { font-size: 0.85rem; color: var(--text-color); font-weight: 600; }
-        .deadline-badge { font-size: 0.65rem; background-color: var(--danger); color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        
+        /* カレンダー上のカラー分けされた締切・イベントバッジ */
+        .calendar-event-badge {
+            font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; font-weight: 700; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+        }
+        .badge-danger { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .badge-info { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .badge-purple { background-color: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.4); }
 
-        .trackers-container { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 4px; }
+        .trackers-container { display: flex; flex-direction: column; gap: 3px; width: 100%; margin-top: 2px; }
         .tracker-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); }
         .habit-btn {
-            width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--text-color);
+            width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--text-color);
         }
         .habit-btn.status-maru { background-color: var(--success); color: #000; border-color: var(--success); font-weight: bold; }
         .habit-btn.status-batsu { background-color: var(--danger); color: white; border-color: var(--danger); }
@@ -373,7 +326,6 @@
 
     <!-- タブ4: 仕事管理エリア -->
     <div id="job-tab" class="tab-content">
-        <!-- 案件全体のビジュアル見える化カード -->
         <div class="card">
             <h3 style="margin-top:0; margin-bottom:12px; color: #f8fafc;">📈 案件の全体ステータス可視化</h3>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 16px;">
@@ -429,9 +381,14 @@
                     <input type="text" id="job-fee" placeholder="例: 50,000円 / 未定" style="width:100%; box-sizing:border-box;" onchange="saveJobMeta()">
                 </div>
                 <div>
-                    <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">納品形式・サイズ・備考:</label>
-                    <input type="text" id="job-format" placeholder="例: A4 / 350dpi / .clip" style="width:100%; box-sizing:border-box;" onchange="saveJobMeta()">
+                    <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">仕事・案件の締め切り日:</label>
+                    <input type="date" id="job-deadline" style="width:100%; box-sizing:border-box;" onchange="saveJobMeta()">
                 </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">納品形式・サイズ・備考:</label>
+                <input type="text" id="job-format" placeholder="例: A4 / 350dpi / .clip" style="width:100%; box-sizing:border-box;" onchange="saveJobMeta()">
             </div>
 
             <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">取引メモ・やり取りの要点:</label>
@@ -652,6 +609,8 @@
         if (jobStatus && document.activeElement !== jobStatus) jobStatus.value = currentProj.jobStatus || '作画進行中（本制作）';
         const jobFee = document.getElementById('job-fee');
         if (jobFee && document.activeElement !== jobFee) jobFee.value = currentProj.fee || '';
+        const jobDeadline = document.getElementById('job-deadline');
+        if (jobDeadline && document.activeElement !== jobDeadline) jobDeadline.value = currentProj.deadline || '';
         const jobFormat = document.getElementById('job-format');
         if (jobFormat && document.activeElement !== jobFormat) jobFormat.value = currentProj.format || '';
         const jobMemo = document.getElementById('job-memo');
@@ -891,6 +850,7 @@
         const client = document.getElementById('job-client').value;
         const jobStatus = document.getElementById('job-status').value;
         const fee = document.getElementById('job-fee').value;
+        const deadline = document.getElementById('job-deadline').value;
         const format = document.getElementById('job-format').value;
         const jobMemo = document.getElementById('job-memo').value;
         await updateCloudData(data => {
@@ -898,6 +858,7 @@
             proj.client = client;
             proj.jobStatus = jobStatus;
             proj.fee = fee;
+            proj.deadline = deadline; // 連動
             proj.format = format;
             proj.jobMemo = jobMemo;
         });
@@ -1015,19 +976,29 @@
             num.textContent = day;
             headerRow.appendChild(num);
 
-            const currentProj = appData.projects[appData.currentProjectId];
-            const deadlineStr = currentProj ? currentProj.deadline : '';
-            if (deadlineStr) {
-                const dDate = new Date(deadlineStr);
-                if (dDate.getFullYear() === currentYear && (dDate.getMonth() + 1) === (currentMonth + 1) && dDate.getDate() === day) {
-                    const badge = document.createElement('span');
-                    badge.className = 'deadline-badge';
-                    badge.textContent = '締切';
-                    headerRow.appendChild(badge);
+            cell.appendChild(headerRow);
+
+            // 全作品の締切をチェックしてカレンダーにカラー分け表示
+            const projects = appData.projects || {};
+            let badgeHtml = '';
+            let colorIndex = 0;
+            const badgeColors = ['badge-danger', 'badge-info', 'badge-purple'];
+
+            for (const p of Object.values(projects)) {
+                if (p.deadline) {
+                    const dDate = new Date(p.deadline);
+                    if (dDate.getFullYear() === currentYear && (dDate.getMonth() + 1) === (currentMonth + 1) && dDate.getDate() === day) {
+                        const colorClass = badgeColors[colorIndex % badgeColors.length];
+                        badgeHtml += `<span class="calendar-event-badge ${colorClass}" title="${p.name} 締切">📌 ${p.name}</span>`;
+                        colorIndex++;
+                    }
                 }
             }
-
-            cell.appendChild(headerRow);
+            if (badgeHtml) {
+                const badgeContainer = document.createElement('div');
+                badgeContainer.innerHTML = badgeHtml;
+                cell.appendChild(badgeContainer);
+            }
 
             const container = document.createElement('div');
             container.className = 'trackers-container';
