@@ -106,7 +106,6 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
         .weekday { text-align: center; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); padding-bottom: 8px; }
         
-        /* カレンダーセルの横幅固定・はみ出し防止 */
         .day-cell {
             background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; min-height: 110px; max-height: 110px; overflow: hidden; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s;
         }
@@ -115,15 +114,14 @@
         .day-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 2px; }
         .day-number { font-size: 0.85rem; color: var(--text-color); font-weight: 600; }
         
-        /* 横幅を伸ばさないための固定＆省略スタイル */
         .calendar-event-badge {
             font-size: 0.6rem; padding: 2px 4px; border-radius: 4px; font-weight: 700; margin-top: 2px; display: block; text-align: center;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
         }
-        .badge-manuscript { background-color: rgba(245, 158, 11, 0.2); color: #f6ad55; border: 1px solid rgba(245, 158, 11, 0.4); } /* 原稿締切: 黄色 */
-        .badge-job { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }        /* 依頼締切: 赤 */
-        .badge-custom { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }   /* 手動予定: 緑 */
-        .badge-gcal { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }    /* Gカレンダーインポート: 青 */
+        .badge-manuscript { background-color: rgba(245, 158, 11, 0.2); color: #f6ad55; border: 1px solid rgba(245, 158, 11, 0.4); } 
+        .badge-job { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }        
+        .badge-custom { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }   
+        .badge-gcal { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }    
 
         .trackers-container { display: flex; flex-direction: column; gap: 2px; width: 100%; margin-top: 2px; }
         .tracker-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--text-muted); }
@@ -205,10 +203,10 @@
         <div class="card day-detail-card" id="day-detail-section">
             <h3 id="selected-date-title" style="margin-top:0; margin-bottom:16px; font-size: 1.1rem; color: var(--primary);">日付を選択してください</h3>
             
-            <!-- 予定・イベントの追加・編集エリア -->
+            <!-- 予定・イベントの追加・修正・削除エリア -->
             <div style="background: var(--gray); padding: 18px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 24px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <label style="font-weight: 700; font-size: 0.9rem; color: #f8fafc;">📅 この日の予定・イベント管理</label>
+                    <label style="font-weight: 700; font-size: 0.9rem; color: #f8fafc;">📅 この日の予定・イベント管理（修正・削除可能）</label>
                 </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
                     <input type="text" id="custom-event-title" placeholder="新しい予定を追加..." style="flex: 1; min-width: 200px;">
@@ -1062,7 +1060,6 @@
             let badgeHtml = '';
             const yyyyMmDd = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-            // 1. 原稿進捗締切（黄色：文字のみ）
             for (const p of Object.values(projects)) {
                 if (p.deadline === yyyyMmDd) {
                     badgeHtml += `<span class="calendar-event-badge badge-manuscript" title="原稿締切">🔥 原稿締切</span>`;
@@ -1072,14 +1069,12 @@
                 }
             }
 
-            // 2. 手動追加イベント（緑：文字のみ）
             const eventKey = `evt_${currentYear}_${currentMonth + 1}_${day}`;
             const customEvents = (appData.custom_events && appData.custom_events[eventKey]) || [];
             customEvents.forEach((evText) => {
                 badgeHtml += `<span class="calendar-event-badge badge-custom" title="${evText}">📌 ${evText}</span>`;
             });
 
-            // 3. インポートされたGoogleカレンダー予定（青：文字のみ）
             const gcalEvents = (appData.gcal_events && appData.gcal_events[yyyyMmDd]) || [];
             gcalEvents.forEach((gText) => {
                 badgeHtml += `<span class="calendar-event-badge badge-gcal" title="${gText}">📅 ${gText}</span>`;
@@ -1162,16 +1157,20 @@
                 const rowDiv = document.createElement('div');
                 rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color);';
                 rowDiv.innerHTML = `
-                    <input type="text" value="${ev}" id="edit-ev-${idx}" style="flex:1; padding:6px; font-size:0.85rem;" onchange="updateCustomEvent(${idx}, this.value)">
+                    <input type="text" value="${ev}" style="flex:1; padding:6px; font-size:0.85rem;" onchange="updateCustomEvent(${idx}, this.value)">
                     <button onclick="deleteCustomEvent(${idx})" style="background:var(--danger); color:#fff; padding:6px 10px; font-size:0.75rem;">削除</button>
                 `;
                 evList.appendChild(rowDiv);
             });
-            // Googleカレンダーインポート予定（確認用）
+            // Gカレンダーインポート予定（編集・削除可能）
             gcalEvents.forEach((gv, gIdx) => {
                 const rowDiv = document.createElement('div');
-                rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); color:#60a5fa; font-size:0.85rem;';
-                rowDiv.innerHTML = `<span>📅 (Gカレンダー) ${gv}</span> <button onclick="deleteGCalEvent('${yyyyMmDd}', ${gIdx})" style="background:var(--danger); color:#fff; padding:4px 8px; font-size:0.7rem; margin-left:auto;">削除</button>`;
+                rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color);';
+                rowDiv.innerHTML = `
+                    <span style="font-size:0.75rem; color:#60a5fa; font-weight:bold;">[Gカレンダー]</span>
+                    <input type="text" value="${gv}" style="flex:1; padding:6px; font-size:0.85rem; color:#60a5fa;" onchange="updateGCalEvent('${yyyyMmDd}', ${gIdx}, this.value)">
+                    <button onclick="deleteGCalEvent('${yyyyMmDd}', ${gIdx})" style="background:var(--danger); color:#fff; padding:6px 10px; font-size:0.75rem;">削除</button>
+                `;
                 evList.appendChild(rowDiv);
             });
         }
@@ -1219,6 +1218,14 @@
         await updateCloudData(data => {
             if (data.custom_events && data.custom_events[eventKey]) {
                 data.custom_events[eventKey].splice(idx, 1);
+            }
+        });
+    }
+
+    window.updateGCalEvent = async function(dateStr, idx, newText) {
+        await updateCloudData(data => {
+            if (data.gcal_events && data.gcal_events[dateStr]) {
+                data.gcal_events[dateStr][idx] = newText.trim();
             }
         });
     }
