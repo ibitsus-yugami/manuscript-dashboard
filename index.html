@@ -409,7 +409,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">取引先 / クライアント名:</label>
-                    <input type="text" id="job-client" placeholder="例: 〇〇出版社 / 個人依頼" style="width:100%; box-sizing:border-box;" oninput="saveJobMeta()">
+                    <input type="text" id="job-client" placeholder="例: 〇〇出版社 / 個人依頼" style="width:100%; box-sizing:border-box;" onchange="saveJobMeta()">
                 </div>
                 <div>
                     <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">現在の取引・進行ステータス:</label>
@@ -426,16 +426,16 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">報酬・ギャランティ:</label>
-                    <input type="text" id="job-fee" placeholder="例: 50,000円 / 未定" style="width:100%; box-sizing:border-box;" oninput="saveJobMeta()">
+                    <input type="text" id="job-fee" placeholder="例: 50,000円 / 未定" style="width:100%; box-sizing:border-box;" onchange="saveJobMeta()">
                 </div>
                 <div>
                     <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">納品形式・サイズ・備考:</label>
-                    <input type="text" id="job-format" placeholder="例: A4 / 350dpi / .clip" style="width:100%; box-sizing:border-box;" oninput="saveJobMeta()">
+                    <input type="text" id="job-format" placeholder="例: A4 / 350dpi / .clip" style="width:100%; box-sizing:border-box;" onchange="saveJobMeta()">
                 </div>
             </div>
 
             <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">取引メモ・やり取りの要点:</label>
-            <textarea id="job-memo" class="memo-box" placeholder="先方からの要望や修正指示など..." oninput="saveJobMeta()" style="height: 120px;"></textarea>
+            <textarea id="job-memo" class="memo-box" placeholder="先方からの要望や修正指示など..." onchange="saveJobMeta()" style="height: 120px;"></textarea>
         </div>
     </div>
 
