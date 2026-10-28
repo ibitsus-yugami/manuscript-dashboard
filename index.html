@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progress & Habit Tracker (Complete Edition)</title>
+    <title>Progress & Habit Tracker (Dark & Stylish Edition)</title>
     <style>
         :root {
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --border-color: #e1e4e8;
-            --primary: #4a90e2;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --gray: #e0e0e0;
+            --bg-color: #121418;
+            --card-bg: #1a1d23;
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #2d3748;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gray: #252830;
+            --hover-bg: #22262e;
         }
 
         body {
@@ -25,89 +27,95 @@
         }
 
         .container { max-width: 1100px; margin: 0 auto; }
-        h1 { font-size: 1.5rem; margin-bottom: 15px; color: #2c3e50; }
+
+        h1 { font-size: 1.5rem; margin-bottom: 15px; color: #f8fafc; font-weight: 600; letter-spacing: 0.05em; }
 
         .tab-menu {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
             flex-wrap: wrap;
         }
 
         .tab-btn {
-            padding: 10px 15px;
+            padding: 10px 18px;
             background-color: var(--gray);
-            color: var(--text-color);
-            border: none;
+            color: var(--text-muted);
+            border: 1px solid transparent;
             border-radius: 6px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 0.9rem;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
-        .tab-btn.active { background-color: var(--primary); color: white; }
+        .tab-btn:hover { color: var(--text-color); background: var(--hover-bg); }
+        .tab-btn.active { background-color: var(--primary); color: white; border-color: var(--primary); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 10px;
+            padding: 22px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
 
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
 
-        progress { width: 100%; height: 14px; border-radius: 7px; overflow: hidden; }
-        progress::-webkit-progress-bar { background-color: var(--gray); border-radius: 7px; }
-        progress::-webkit-progress-value { background-color: var(--primary); border-radius: 7px; }
+        progress { width: 100%; height: 10px; border-radius: 5px; overflow: hidden; background: var(--gray); }
+        progress::-webkit-progress-bar { background-color: var(--gray); border-radius: 5px; }
+        progress::-webkit-progress-value { background-color: var(--primary); border-radius: 5px; }
 
         input, select, textarea {
-            padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem; font-family: inherit;
+            padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; font-family: inherit;
+            background: var(--bg-color); color: var(--text-color);
         }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
 
         button {
-            padding: 8px 16px; background-color: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem;
+            padding: 9px 16px; background-color: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+            transition: opacity 0.2s;
         }
-        button:hover { opacity: 0.9; }
+        button:hover { opacity: 0.85; }
 
-        .gcal-btn { background-color: #4285F4; }
+        .gcal-btn { background-color: #2563eb; }
 
+        /* マトリクスボード */
         .matrix-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; display: block; overflow-x: auto; }
-        .matrix-table th, .matrix-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; white-space: nowrap; }
-        .matrix-table th { background: var(--gray); color: var(--text-color); }
+        .matrix-table th, .matrix-table td { border: 1px solid var(--border-color); padding: 10px; text-align: center; white-space: nowrap; }
+        .matrix-table th { background: var(--gray); color: var(--text-color); font-weight: 600; }
         .matrix-cell { cursor: pointer; width: 45px; height: 40px; font-weight: bold; transition: background 0.2s; }
         .matrix-cell.status-0 { background: transparent; }
-        .matrix-cell.status-1 { background: #ffeaa7; color: #d63031; }
-        .matrix-cell.status-2 { background: var(--success); color: white; }
+        .matrix-cell.status-1 { background: #422006; color: #fde047; }
+        .matrix-cell.status-2 { background: #064e3b; color: #6ee7b7; }
 
         .deadline-info {
-            display: flex; gap: 15px; margin-top: 12px; align-items: center; font-size: 0.9rem; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); flex-wrap: wrap;
+            display: flex; gap: 15px; margin-top: 12px; align-items: center; font-size: 0.9rem; background: var(--gray); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); flex-wrap: wrap;
         }
 
         .memo-box { width: 100%; margin-top: 5px; resize: vertical; height: 100px; box-sizing: border-box; }
 
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .weekday { text-align: center; font-weight: bold; font-size: 0.85rem; color: #7f8c8d; padding-bottom: 5px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .weekday { text-align: center; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); padding-bottom: 8px; }
         .day-cell {
-            background: #fafbfc; border: 1px solid var(--border-color); border-radius: 6px; min-height: 80px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: background 0.2s;
+            background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; min-height: 85px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s;
         }
-        .day-cell:hover { background: #f0f4f8; }
-        .day-cell.selected { border-color: var(--primary); background: #ebf3fc; }
+        .day-cell:hover { background: var(--hover-bg); border-color: var(--text-muted); }
+        .day-cell.selected { border-color: var(--primary); background: #1e293b; }
         .day-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px; }
-        .day-number { font-size: 0.85rem; color: #333; font-weight: bold; }
-        .deadline-badge { font-size: 0.65rem; background-color: var(--danger); color: white; padding: 1px 4px; border-radius: 3px; font-weight: bold; }
+        .day-number { font-size: 0.85rem; color: var(--text-color); font-weight: 600; }
+        .deadline-badge { font-size: 0.65rem; background-color: var(--danger); color: white; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
 
         .trackers-container { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 4px; }
-        .tracker-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #666; }
+        .tracker-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); }
         .habit-btn {
-            width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--border-color); background: white; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0;
+            width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--text-color);
         }
         .habit-btn.status-maru { background-color: var(--success); color: white; border-color: var(--success); }
         .habit-btn.status-batsu { background-color: var(--danger); color: white; border-color: var(--danger); }
@@ -116,23 +124,26 @@
         @media (max-width: 768px) { .manager-layout { grid-template-columns: 1fr; } }
         .sidebar-list { display: flex; flex-direction: column; gap: 6px; max-height: 500px; overflow-y: auto; border-right: 1px solid var(--border-color); padding-right: 10px; }
         .list-item-btn {
-            text-align: left; padding: 10px 12px; background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--text-color); transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            text-align: left; padding: 10px 12px; background: var(--gray); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--text-color); transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .list-item-btn:hover { background: #e9ecef; }
+        .list-item-btn:hover { background: var(--hover-bg); }
         .list-item-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .detail-pane { background: #fafbfc; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; min-height: 400px; }
+        .detail-pane { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; min-height: 400px; }
 
-        .delete-btn-danger { background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-        .edit-btn-primary { background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .delete-btn-danger { background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+        .edit-btn-primary { background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
         .action-group { display: flex; gap: 8px; align-items: center; }
-        .overview-box { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 12px; white-space: pre-wrap; word-break: break-all; font-size: 0.9rem; line-height: 1.5; }
-        .overview-title { font-size: 1.1rem; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+        .overview-box { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 12px; white-space: pre-wrap; word-break: break-all; font-size: 0.9rem; line-height: 1.5; color: var(--text-color); }
+        .overview-title { font-size: 1.1rem; font-weight: bold; color: #f8fafc; margin-bottom: 10px; }
         .overview-link { display: inline-block; margin-bottom: 10px; color: var(--primary); word-break: break-all; font-size: 0.85rem; }
         .img-preview-container { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
-        .file-name-display { font-size: 0.8rem; color: #2980b9; margin-top: 4px; font-weight: bold; }
+        .img-thumb-wrap { position: relative; display: inline-block; }
+        .uploaded-img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; }
+        .img-delete-btn { position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .file-name-display { font-size: 0.8rem; color: #38bdf8; margin-top: 4px; font-weight: bold; }
 
-        #image-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
-        #modal-img { max-width: 90%; max-height: 90%; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        #image-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+        #modal-img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         #image-modal span { position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
@@ -152,10 +163,10 @@
     <!-- タブ1: カレンダー -->
     <div id="calendar-tab" class="tab-content active">
         <div class="card">
-            <div class="section-header" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                <h3 style="margin:0;" id="exercise-summary">今月の達成日数: 0日</h3>
-                <div id="monthly-achievements-banner" style="background: #eef9f2; border: 1px solid var(--success); padding: 10px 15px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; color: #27ae60; font-weight: bold;">
-                    🌟 今月の実績ハイライト: まだ今月の実績は登録されていません。
+            <div class="section-header" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                <h3 style="margin:0; color: #f8fafc;" id="exercise-summary">今月の達成日数: 0日</h3>
+                <div id="monthly-achievements-banner" style="background: #064e3b; border: 1px solid #059669; padding: 12px 16px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 0.9rem; color: #d1fae5;">
+                    🌟 今月の実績ハイライト: 読み込み中...
                 </div>
             </div>
         </div>
@@ -163,7 +174,7 @@
         <div class="card">
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)">&lt; 前月</button>
-                <h3 id="calendar-title" style="margin:0;">2026年 9月</h3>
+                <h3 id="calendar-title" style="margin:0; color: #f8fafc;">2026年 9月</h3>
                 <button onclick="changeMonth(1)">次月 &gt;</button>
             </div>
             <div class="calendar-grid" id="calendar-grid"></div>
@@ -171,52 +182,63 @@
 
         <div class="card day-detail-card" id="day-detail-section">
             <h3 id="selected-date-title" style="margin-top:0; margin-bottom:15px; font-size: 1.1rem; color: var(--primary);">日付を選択してください</h3>
-            <div style="background: #eef2f7; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50;">🔥 今日書く実績・成果</label>
-                    <button class="edit-btn-primary" onclick="saveTodayAchievement()">実績を保存</button>
+            
+            <!-- マスターと彼の実績入力エリア -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div style="background: var(--gray); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-weight: 600; font-size: 0.9rem; color: #f8fafc;">✨ マスターの実績</label>
+                        <button onclick="saveUserAchievement('master')" style="padding: 5px 10px; font-size: 0.75rem;">保存</button>
+                    </div>
+                    <textarea id="selected-day-achievement-master" class="memo-box" style="height: 80px;" placeholder="今日できたこと..."></textarea>
                 </div>
-                <textarea id="selected-day-achievement" class="memo-box" style="height: 70px;" placeholder="今日の実績や進捗をここに記入..."></textarea>
+                <div style="background: var(--gray); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-weight: 600; font-size: 0.9rem; color: #f8fafc;">⭐ 彼の実績</label>
+                        <button onclick="saveUserAchievement('partner')" style="padding: 5px 10px; font-size: 0.75rem;">保存</button>
+                    </div>
+                    <textarea id="selected-day-achievement-partner" class="memo-box" style="height: 80px;" placeholder="今日できたこと..."></textarea>
+                </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="background: var(--gray); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50;">🐱 れみぱん用メモ</label>
+                        <label style="font-weight: 600; font-size: 0.9rem; color: #f8fafc;">🐱 れみぱん用メモ</label>
                         <div class="action-group" id="remipan-action-group">
                             <button class="edit-btn-primary" onclick="toggleDayEdit('remipan')">編集する</button>
                         </div>
                     </div>
                     <div id="remipan-view-container"></div>
                     <div id="remipan-edit-container" style="display: none;">
-                        <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="ここにれみぱん用のメモを入力（画像ペーストもOK）..." onpaste="handleDayPaste(event, 'remipan')"></textarea>
+                        <textarea id="selected-day-memo-remipan" class="memo-box" placeholder="メモ（画像ペーストOK）..." onpaste="handleDayPaste(event, 'remipan')"></textarea>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可):</label>
+                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加:</label>
                             <input type="file" id="remipan-file-input" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)">
                             <div id="remipan-file-name" class="file-name-display">選択されていません</div>
                         </div>
-                        <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
+                        <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
                             <button onclick="saveDayMemoAndClose('remipan')">登録する</button>
                         </div>
                     </div>
                 </div>
 
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="background: var(--gray); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <label style="font-weight: bold; font-size: 0.9rem; color: #2c3e50;">🐶 ゆくん用メモ</label>
+                        <label style="font-weight: 600; font-size: 0.9rem; color: #f8fafc;">🐶 ゆくん用メモ</label>
                         <div class="action-group" id="yukun-action-group">
                             <button class="edit-btn-primary" onclick="toggleDayEdit('yukun')">編集する</button>
                         </div>
                     </div>
                     <div id="yukun-view-container"></div>
                     <div id="yukun-edit-container" style="display: none;">
-                        <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="ここにゆくん用のメモを入力（画像ペーストもOK）..." onpaste="handleDayPaste(event, 'yukun')"></textarea>
+                        <textarea id="selected-day-memo-yukun" class="memo-box" placeholder="メモ（画像ペーストOK）..." onpaste="handleDayPaste(event, 'yukun')"></textarea>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加 (複数可):</label>
+                            <label style="font-size: 0.8rem; font-weight: bold;">画像追加:</label>
                             <input type="file" id="yukun-file-input" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)">
                             <div id="yukun-file-name" class="file-name-display">選択されていません</div>
                         </div>
-                        <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
+                        <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
                             <button onclick="saveDayMemoAndClose('yukun')">登録する</button>
                         </div>
                     </div>
@@ -230,18 +252,18 @@
         <div class="card">
             <div class="section-header">
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                    <label style="font-weight:bold; font-size:0.9rem;">作品:</label>
-                    <select id="matrix-project-selector" onchange="switchProject(this.value)" style="font-weight:bold; padding:6px 12px; background:white;"></select>
-                    <button onclick="addNewProject()" style="background:#27ae60; padding:6px 10px; font-size:0.8rem;">＋ 追加</button>
-                    <button onclick="editCurrentProjectName()" style="background:#e67e22; padding:6px 10px; font-size:0.8rem;">編集</button>
-                    <button onclick="deleteCurrentProject()" style="background:#e74c3c; padding:6px 10px; font-size:0.8rem;">削除</button>
+                    <label style="font-weight:600; font-size:0.9rem;">作品:</label>
+                    <select id="matrix-project-selector" onchange="switchProject(this.value)" style="font-weight:600; padding:6px 12px;"></select>
+                    <button onclick="addNewProject()" style="background:#059669; padding:6px 10px; font-size:0.8rem;">＋ 追加</button>
+                    <button onclick="editCurrentProjectName()" style="background:#d97706; padding:6px 10px; font-size:0.8rem;">編集</button>
+                    <button onclick="deleteCurrentProject()" style="background:var(--danger); padding:6px 10px; font-size:0.8rem;">削除</button>
                 </div>
                 <div style="display:flex; gap:10px;">
                     <button onclick="addMatrixRow()">＋ 項目追加</button>
-                    <button onclick="addMatrixProcess()" style="background:#27ae60;">＋ 工程追加</button>
+                    <button onclick="addMatrixProcess()" style="background:#059669;">＋ 工程追加</button>
                 </div>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">マスをクリックすると「未着手 ➔ 進行中 ➔ 完了」に切り替わります。</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">マスをクリックすると「未着手 ➔ 進行中 ➔ 完了」に切り替わります。</p>
             <div style="overflow-x: auto;">
                 <table class="matrix-table" id="matrix-table"></table>
             </div>
@@ -253,65 +275,65 @@
         <div class="card">
             <div class="section-header" style="margin-bottom:15px;">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <label style="font-weight:bold; font-size:0.9rem;">作品:</label>
-                    <select id="manuscript-project-selector" onchange="switchProject(this.value)" style="font-weight:bold; padding:6px 12px; background:white;"></select>
+                    <label style="font-weight:600; font-size:0.9rem;">作品:</label>
+                    <select id="manuscript-project-selector" onchange="switchProject(this.value)" style="font-weight:600; padding:6px 12px;"></select>
                 </div>
             </div>
-            <h3 style="margin-top:0; margin-bottom:15px;">⏳ 締め切り・全体メモ</h3>
+            <h3 style="margin-top:0; margin-bottom:15px; color: #f8fafc;">⏳ 締め切り・全体メモ</h3>
             <div class="deadline-info" style="margin-top: 0;">
                 <div>
-                    <label for="deadline-date" style="font-weight:bold; font-size:0.85rem;">締め切り日時:</label>
+                    <label for="deadline-date" style="font-weight:600; font-size:0.85rem;">締め切り日時:</label>
                     <input type="date" id="deadline-date" onchange="saveManuscriptMeta()">
                 </div>
-                <div id="countdown-text" style="color: #e74c3c; font-weight: bold; font-size: 0.85rem;"></div>
-                <button class="gcal-btn" onclick="openGCalDeadline()" style="margin-left: auto;">Googleカレンダーに締め切り登録</button>
+                <div id="countdown-text" style="color: var(--danger); font-weight: bold; font-size: 0.85rem;"></div>
+                <button class="gcal-btn" onclick="openGCalDeadline()" style="margin-left: auto;">Googleカレンダー登録</button>
             </div>
             <textarea id="manuscript-memo" class="memo-box" placeholder="全体制作メモ..." oninput="saveManuscriptMeta()"></textarea>
         </div>
 
         <div class="card">
             <div class="section-header">
-                <h3 style="margin:0;">✍️ 全体原稿進捗</h3>
+                <h3 style="margin:0; color: #f8fafc;">✍️ 全体原稿進捗</h3>
                 <span id="manuscript-text" style="font-weight: bold; font-size: 1.1rem; color: var(--primary);">0%</span>
             </div>
             <progress id="manuscript-bar" value="0" max="100" style="margin-top: 10px;"></progress>
         </div>
 
         <div class="card">
-            <h3 style="margin-top:0; margin-bottom:15px;">📊 工程別の進み具合</h3>
+            <h3 style="margin-top:0; margin-bottom:15px; color: #f8fafc;">📊 工程別の進み具合</h3>
             <div id="process-bars-container"></div>
         </div>
     </div>
 
-    <!-- タブ4: ネタ帳 -->
+    <!-- タブ4: ネタ帳エリア -->
     <div id="ideas-tab" class="tab-content">
         <div class="card">
             <div class="section-header">
-                <h3 style="margin:0;">💡 ネタ帳</h3>
+                <h3 style="margin:0; color: #f8fafc;">💡 ネタ帳</h3>
                 <button onclick="addIdeaItem()">＋ 新規ネタを追加</button>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると詳細確認・編集が行えます。</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">左側のリストからタイトルを選択すると詳細確認・編集が行えます。</p>
             <div class="manager-layout">
                 <div class="sidebar-list" id="ideas-sidebar"></div>
                 <div class="detail-pane" id="ideas-detail">
-                    <p style="color: #888; text-align: center; margin-top: 100px;">左側からネタを選択するか、新しいネタを追加してください。</p>
+                    <p style="color: var(--text-muted); text-align: center; margin-top: 100px;">左側からネタを選択するか、新しいネタを追加してください。</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- タブ5: インプット -->
+    <!-- タブ5: インプットエリア -->
     <div id="inputs-tab" class="tab-content">
         <div class="card">
             <div class="section-header">
-                <h3 style="margin:0;">🔗 インプット情報</h3>
+                <h3 style="margin:0; color: #f8fafc;">🔗 インプット情報</h3>
                 <button onclick="addInputItem()">＋ 新規インプットを追加</button>
             </div>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">左側のリストからタイトルを選択すると確認・編集できます。</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">左側のリストからタイトルを選択すると確認・編集できます。</p>
             <div class="manager-layout">
                 <div class="sidebar-list" id="inputs-sidebar"></div>
                 <div class="detail-pane" id="inputs-detail">
-                    <p style="color: #888; text-align: center; margin-top: 100px;">左側からインプット項目を選択してください。</p>
+                    <p style="color: var(--text-muted); text-align: center; margin-top: 100px;">左側からインプット項目を選択してください。</p>
                 </div>
             </div>
         </div>
@@ -357,7 +379,8 @@
         trackers: {},
         day_memos_remipan: {},
         day_memos_yukun: {},
-        day_achievements: {},
+        day_achievements_master: {},
+        day_achievements_partner: {},
         day_images_remipan: {},
         day_images_yukun: {},
         ideas: [],
@@ -430,7 +453,8 @@
                 appData.trackers = cloudData.trackers ?? {};
                 appData.day_memos_remipan = cloudData.day_memos_remipan ?? {};
                 appData.day_memos_yukun = cloudData.day_memos_yukun ?? {};
-                appData.day_achievements = cloudData.day_achievements ?? {};
+                appData.day_achievements_master = cloudData.day_achievements_master ?? cloudData.day_achievements ?? {};
+                appData.day_achievements_partner = cloudData.day_achievements_partner ?? {};
                 appData.day_images_remipan = cloudData.day_images_remipan ?? {};
                 appData.day_images_yukun = cloudData.day_images_yukun ?? {};
                 appData.ideas = cloudData.ideas ?? [];
@@ -541,7 +565,7 @@
         const table = document.getElementById('matrix-table');
         let html = `<tr><th>項目 / 工程</th>`;
         (currentProj.matrixProcesses || []).forEach((proc, pIdx) => {
-            html += `<th>${proc} <button onclick="deleteMatrixProcess(${pIdx})" style="background:none; border:none; color:red; cursor:pointer; font-size:0.7rem;" title="工程削除">×</button></th>`;
+            html += `<th>${proc} <button onclick="deleteMatrixProcess(${pIdx})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.7rem;" title="工程削除">×</button></th>`;
         });
         html += `<th>操作</th></tr>`;
 
@@ -613,7 +637,7 @@
         const processes = proj.matrixProcesses || [];
         const totalRows = rows.length;
         if (totalRows === 0 || processes.length === 0) {
-            container.innerHTML = '<p style="color:#888;">タスクや工程が登録されていません。</p>';
+            container.innerHTML = '<p style="color:var(--text-muted);">タスクや工程が登録されていません。</p>';
             document.getElementById('manuscript-bar').value = 0;
             document.getElementById('manuscript-text').textContent = '0%';
             return;
@@ -637,7 +661,7 @@
             const rowDiv = document.createElement('div');
             rowDiv.style.marginBottom = '12px';
             rowDiv.innerHTML = `
-                <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:bold; margin-bottom:4px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:600; margin-bottom:4px; color:var(--text-color);">
                     <span>${proc}</span>
                     <span>${completedCount} / ${totalRows} (${percent}%)</span>
                 </div>
@@ -736,14 +760,14 @@
         for (let i = 0; i < firstDayIndex; i++) {
             const div = document.createElement('div');
             div.className = 'day-cell';
-            div.style.background = '#f0f0f0';
-            div.style.cursor = 'default';
+            div.style.background = 'transparent';
+            div.style.border = 'none';
             grid.appendChild(div);
         }
 
         let exerciseCount = 0;
-        let latestAchievementText = "まだ今月の実績は登録されていません。";
-        let latestAchievementDate = "";
+        let monthMasterAch = [];
+        let monthPartnerAch = [];
 
         for (let day = 1; day <= lastDay; day++) {
             const cell = document.createElement('div');
@@ -801,45 +825,55 @@
             cell.appendChild(container);
             grid.appendChild(cell);
 
-            const achKey = `ach_${currentYear}_${currentMonth + 1}_${day}`;
-            if (appData.day_achievements && appData.day_achievements[achKey] && appData.day_achievements[achKey].trim() !== '') {
-                latestAchievementText = appData.day_achievements[achKey];
-                latestAchievementDate = `${currentMonth + 1}月${day}日`;
+            // 今月分の実績を集約
+            const mKey = `ach_${currentYear}_${currentMonth + 1}_${day}`;
+            if (appData.day_achievements_master && appData.day_achievements_master[mKey] && appData.day_achievements_master[mKey].trim() !== '') {
+                monthMasterAch.push(`${currentMonth + 1}/${day}: ${appData.day_achievements_master[mKey]}`);
+            }
+            if (appData.day_achievements_partner && appData.day_achievements_partner[mKey] && appData.day_achievements_partner[mKey].trim() !== '') {
+                monthPartnerAch.push(`${currentMonth + 1}/${day}: ${appData.day_achievements_partner[mKey]}`);
             }
         }
 
         document.getElementById('exercise-summary').textContent = `今月の運動達成日数: ${exerciseCount}日`;
         
         const banner = document.getElementById('monthly-achievements-banner');
-        if (latestAchievementDate) {
-            banner.innerHTML = `🌟 今月の最新実績 (${latestAchievementDate}): ${latestAchievementText}`;
-        } else {
-            banner.innerHTML = `🌟 今月の実績ハイライト: まだ今月の実績は登録されていません。日付を選んで実績を入力してみよう！`;
+        let bannerHtml = `🌟 <b>今月できたこと一覧 (${currentMonth + 1}月)</b><br>`;
+        let hasAny = false;
+
+        if (monthMasterAch.length > 0) {
+            hasAny = true;
+            bannerHtml += `<br><b>✨ マスター:</b><br>• ` + monthMasterAch.join('<br>• ');
         }
+        if (monthPartnerAch.length > 0) {
+            hasAny = true;
+            bannerHtml += `<br><br><b>⭐ 彼:</b><br>• ` + monthPartnerAch.join('<br>• ');
+        }
+
+        if (!hasAny) {
+            bannerHtml = `🌟 今月の実績ハイライト: まだ今月の実績は登録されていません。日付を選んで記録してみよう！`;
+        }
+        banner.innerHTML = bannerHtml;
     }
 
     function updateSelectedDayView() {
         document.getElementById('selected-date-title').textContent = `📝 ${selectedYear}年${selectedMonth}月${selectedDay}日の記録・メモ`;
         
         const achKey = `ach_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        const todayAch = (appData.day_achievements && appData.day_achievements[achKey]) ? appData.day_achievements[achKey] : '';
-        const achInput = document.getElementById('selected-day-achievement');
-        if (achInput && document.activeElement !== achInput) {
-            achInput.value = todayAch;
-        }
+        const masterAch = (appData.day_achievements_master && appData.day_achievements_master[achKey]) || '';
+        const partnerAch = (appData.day_achievements_partner && appData.day_achievements_partner[achKey]) || '';
+        
+        document.getElementById('selected-day-achievement-master').value = masterAch;
+        document.getElementById('selected-day-achievement-partner').value = partnerAch;
 
         const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
         const remipanMemo = (appData.day_memos_remipan && appData.day_memos_remipan[memoKey]) || '';
         const yukunMemo = (appData.day_memos_yukun && appData.day_memos_yukun[memoKey]) || '';
 
         const remipanInput = document.getElementById('selected-day-memo-remipan');
-        if (remipanInput && document.activeElement !== remipanInput) {
-            remipanInput.value = remipanMemo;
-        }
+        if (remipanInput && document.activeElement !== remipanInput) remipanInput.value = remipanMemo;
         const yukunInput = document.getElementById('selected-day-memo-yukun');
-        if (yukunInput && document.activeElement !== yukunInput) {
-            yukunInput.value = yukunMemo;
-        }
+        if (yukunInput && document.activeElement !== yukunInput) yukunInput.value = yukunMemo;
 
         document.getElementById('remipan-file-name').textContent = '選択されていません';
         document.getElementById('yukun-file-name').textContent = '選択されていません';
@@ -848,12 +882,17 @@
         renderDaySection('yukun', yukunMemo);
     }
 
-    window.saveTodayAchievement = async function() {
-        const achVal = document.getElementById('selected-day-achievement').value;
+    window.saveUserAchievement = async function(userType) {
+        const val = document.getElementById(`selected-day-achievement-${userType}`).value;
         const achKey = `ach_${selectedYear}_${selectedMonth}_${selectedDay}`;
         await updateCloudData(data => {
-            if(!data.day_achievements) data.day_achievements = {};
-            data.day_achievements[achKey] = achVal;
+            if (userType === 'master') {
+                if(!data.day_achievements_master) data.day_achievements_master = {};
+                data.day_achievements_master[achKey] = val;
+            } else {
+                if(!data.day_achievements_partner) data.day_achievements_partner = {};
+                data.day_achievements_partner[achKey] = val;
+            }
         });
         alert(`${selectedYear}年${selectedMonth}月${selectedDay}日の実績を保存しました！`);
         renderCalendar();
@@ -889,7 +928,7 @@
             });
 
             viewContainer.innerHTML = `
-                <div class="overview-box">${memoText ? memoText : '<span style="color:#aaa;">メモはありません</span>'}</div>
+                <div class="overview-box">${memoText ? memoText : '<span style="color:#64748b;">メモはありません</span>'}</div>
                 ${imgHtml ? `<div class="img-preview-container">${imgHtml}</div>` : ''}
             `;
         } else {
@@ -913,7 +952,7 @@
             if (!previewWrap) {
                 previewWrap = document.createElement('div');
                 previewWrap.className = 'edit-img-preview-list img-preview-container';
-                editContainer.insertBefore(previewWrap, editContainer.querySelector('div[style*="margin-top: 15px"]'));
+                editContainer.insertBefore(previewWrap, editContainer.querySelector('div[style*="margin-top: 10px"]'));
             }
             previewWrap.innerHTML = imgHtml;
         }
@@ -1098,7 +1137,7 @@
         const sidebar = document.getElementById('ideas-sidebar');
         sidebar.innerHTML = '';
         if (!appData.ideas || appData.ideas.length === 0) {
-            sidebar.innerHTML = '<span style="font-size:0.85rem; color:#888; padding:10px;">ネタがありません</span>';
+            sidebar.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted); padding:10px;">ネタがありません</span>';
             return;
         }
         appData.ideas.forEach(item => {
@@ -1113,33 +1152,33 @@
     function renderIdeasDetail() {
         const pane = document.getElementById('ideas-detail');
         const item = (appData.ideas || []).find(i => i.id === activeIdeaId);
-        if (!item) { pane.innerHTML = '<p style="color: #888; text-align: center; margin-top: 100px;">ネタが選択されていません。</p>'; return; }
+        if (!item) { pane.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 100px;">ネタが選択されていません。</p>'; return; }
         const isEditing = !!ideaEditingMap[item.id];
 
         if (!isEditing) {
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細確認</h3>
+                    <h3 style="margin: 0; color: #f8fafc;">💡 ネタ詳細確認</h3>
                     <div class="action-group">
                         <button class="edit-btn-primary" onclick="toggleIdeaEdit(${item.id})">編集する</button>
                         <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">削除</button>
                     </div>
                 </div>
                 <div class="overview-title">${item.title || '(無題)'}</div>
-                <div class="overview-box">${item.content || '<span style="color:#aaa;">詳細内容はありません</span>'}</div>
+                <div class="overview-box">${item.content || '<span style="color:var(--text-muted);">詳細内容はありません</span>'}</div>
             `;
         } else {
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #2c3e50;">💡 ネタ詳細編集</h3>
+                    <h3 style="margin: 0; color: #f8fafc;">💡 ネタ詳細編集</h3>
                     <div class="action-group">
                         <button class="edit-btn-primary" onclick="saveIdeaEdit(${item.id})">登録する</button>
                         <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">削除</button>
                     </div>
                 </div>
-                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">タイトル / テーマ:</label>
+                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">タイトル / テーマ:</label>
                 <input type="text" id="idea-title-input-${item.id}" value="${item.title || ''}" style="width:100%; box-sizing:border-box; margin-bottom:12px;">
-                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">詳細内容:</label>
+                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">詳細内容:</label>
                 <textarea id="idea-content-input-${item.id}" class="memo-box" style="height: 180px;">${item.content || ''}</textarea>
             `;
         }
@@ -1192,7 +1231,7 @@
         const sidebar = document.getElementById('inputs-sidebar');
         sidebar.innerHTML = '';
         if (!appData.inputs || appData.inputs.length === 0) {
-            sidebar.innerHTML = '<span style="font-size:0.85rem; color:#888; padding:10px;">インプットがありません</span>';
+            sidebar.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted); padding:10px;">インプットがありません</span>';
             return;
         }
         appData.inputs.forEach(item => {
@@ -1207,13 +1246,13 @@
     function renderInputsDetail() {
         const pane = document.getElementById('inputs-detail');
         const item = (appData.inputs || []).find(i => i.id === activeInputId);
-        if (!item) { pane.innerHTML = '<p style="color: #888; text-align: center; margin-top: 100px;">インプット項目が選択されていません。</p>'; return; }
+        if (!item) { pane.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 100px;">インプット項目が選択されていません。</p>'; return; }
         const isEditing = !!inputEditingMap[item.id];
 
         if (!isEditing) {
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細確認</h3>
+                    <h3 style="margin: 0; color: #f8fafc;">🔗 インプット詳細確認</h3>
                     <div class="action-group">
                         <button class="edit-btn-primary" onclick="toggleInputEdit(${item.id})">編集する</button>
                         <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
@@ -1221,22 +1260,22 @@
                 </div>
                 <div class="overview-title">${item.title || '(無題)'}</div>
                 ${item.link ? `<a href="${item.link}" target="_blank" class="overview-link">🔗 ${item.link}</a>` : ''}
-                <div class="overview-box">${item.content || '<span style="color:#aaa;">メモや感想はありません</span>'}</div>
+                <div class="overview-box">${item.content || '<span style="color:var(--text-muted);">メモや感想はありません</span>'}</div>
             `;
         } else {
             pane.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #2c3e50;">🔗 インプット詳細編集</h3>
+                    <h3 style="margin: 0; color: #f8fafc;">🔗 インプット詳細編集</h3>
                     <div class="action-group">
                         <button class="edit-btn-primary" onclick="saveInputEdit(${item.id})">登録する</button>
                         <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
                     </div>
                 </div>
-                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">名称 / タイトル:</label>
+                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">名称 / タイトル:</label>
                 <input type="text" id="input-title-input-${item.id}" value="${item.title || ''}" style="width:100%; box-sizing:border-box; margin-bottom:12px;">
-                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">参考リンク (URLなど):</label>
+                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">参考リンク (URLなど):</label>
                 <input type="text" id="input-link-input-${item.id}" value="${item.link || ''}" style="width:100%; box-sizing:border-box; margin-bottom:12px;">
-                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:4px;">メモ・感想:</label>
+                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">メモ・感想:</label>
                 <textarea id="input-content-input-${item.id}" class="memo-box" style="height: 140px;">${item.content || ''}</textarea>
             `;
         }
@@ -1255,7 +1294,5 @@
 
     initRealtimeSync();
 </script>
-</body>
-</html>
 </body>
 </html>
