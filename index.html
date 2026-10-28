@@ -373,14 +373,38 @@
 
     <!-- タブ4: 仕事管理エリア -->
     <div id="job-tab" class="tab-content">
+        <!-- 案件全体のビジュアル見える化カード -->
         <div class="card">
-            <div class="section-header" style="margin-bottom:16px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <label style="font-weight:600; font-size:0.9rem;">作品 / 案件:</label>
-                    <select id="job-project-selector" onchange="switchProject(this.value)" style="font-weight:600; padding:8px 14px;"></select>
+            <h3 style="margin-top:0; margin-bottom:12px; color: #f8fafc;">📈 案件の全体ステータス可視化</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 16px;">
+                <div style="background: var(--gray); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">総案件数</div>
+                    <div id="stat-total-jobs" style="font-size: 1.4rem; font-weight: 700; color: #f8fafc;">0件</div>
+                </div>
+                <div style="background: var(--gray); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">進行中・調整中</div>
+                    <div id="stat-active-jobs" style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;">0件</div>
+                </div>
+                <div style="background: var(--gray); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">完了・請求済み</div>
+                    <div id="stat-completed-jobs" style="font-size: 1.4rem; font-weight: 700; color: #34d399;">0件</div>
                 </div>
             </div>
-            <h3 style="margin-top:0; margin-bottom:16px; color: #f8fafc;">💼 取引・案件ステータス管理</h3>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;">完了案件の割合</div>
+            <progress id="job-progress-bar" value="0" max="100"></progress>
+        </div>
+
+        <div class="card">
+            <div class="section-header" style="margin-bottom:16px;">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <label style="font-weight:600; font-size:0.9rem;">作品 / 案件:</label>
+                    <select id="job-project-selector" onchange="switchProject(this.value)" style="font-weight:600; padding:8px 14px;"></select>
+                    <button onclick="addNewProject()" style="background:#10b981; color:#000; padding:7px 12px; font-size:0.8rem;">＋ 追加</button>
+                    <button onclick="editCurrentProjectName()" style="background:#f59e0b; color:#000; padding:7px 12px; font-size:0.8rem;">編集</button>
+                    <button onclick="deleteCurrentProject()" style="background:var(--danger); color:#fff; padding:7px 12px; font-size:0.8rem;">削除</button>
+                </div>
+            </div>
+            <h3 style="margin-top:0; margin-bottom:16px; color: #f8fafc;">💼 取引・案件ステータス詳細</h3>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div>
@@ -633,6 +657,7 @@
         const jobMemo = document.getElementById('job-memo');
         if (jobMemo && document.activeElement !== jobMemo) jobMemo.value = currentProj.jobMemo || '';
 
+        renderJobStats();
         renderMatrixTable();
         renderProcessBars(currentProj);
         updateCountdown(currentProj.deadline);
@@ -642,6 +667,31 @@
         renderInputsManager();
     }
 
+    function renderJobStats() {
+        const projects = appData.projects || {};
+        const total = Object.keys(projects).length;
+        let completed = 0;
+        let active = 0;
+
+        for (const p of Object.values(projects)) {
+            if (p.jobStatus === '完了・請求済み') {
+                completed++;
+            } else {
+                active++;
+            }
+        }
+
+        document.getElementById('stat-total-jobs').textContent = `${total}件`;
+        document.getElementById('stat-active-jobs').textContent = `${active}件`;
+        document.getElementById('stat-completed-jobs').textContent = `${completed}件`;
+
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const bar = document.getElementById('job-progress-bar');
+        if (bar) {
+            bar.value = percent;
+        }
+    }
+
     window.switchProject = async function(pId) {
         await updateCloudData(data => {
             data.currentProjectId = pId;
@@ -649,7 +699,7 @@
     }
 
     window.addNewProject = async function() {
-        const name = prompt("新しい作品名を入力してください:", "新しい作品");
+        const name = prompt("新しい作品/案件名を入力してください:", "新しい案件");
         if (!name) return;
         const newId = 'project_' + Date.now();
         await updateCloudData(data => {
@@ -674,7 +724,7 @@
     window.editCurrentProjectName = async function() {
         const currentProj = appData.projects[appData.currentProjectId];
         if (!currentProj) return;
-        const newName = prompt("作品名を編集:", currentProj.name);
+        const newName = prompt("作品/案件名を編集:", currentProj.name);
         if (!newName) return;
         await updateCloudData(data => {
             data.projects[data.currentProjectId].name = newName;
@@ -687,7 +737,7 @@
             alert("最後の作品は削除できません。");
             return;
         }
-        if (!confirm("本当にこの作品を削除しますか？")) return;
+        if (!confirm("本当にこの作品/案件を削除しますか？")) return;
         await updateCloudData(data => {
             delete data.projects[data.currentProjectId];
             data.currentProjectId = Object.keys(data.projects)[0];
@@ -851,6 +901,7 @@
             proj.format = format;
             proj.jobMemo = jobMemo;
         });
+        renderJobStats();
     }
 
     function updateCountdown(deadlineStr) {
@@ -1421,7 +1472,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #f8fafc;">🔗 インプット詳細確認</h3>
                     <div class="action-group">
-                        <button class="edit-btn-primary" onclick="toggleInputEdit(${item.id})">編集する</button>
+                        <button class="edit-btn-primary" onclick="toggleIdeaEdit(${item.id})">編集する</button>
                         <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
                     </div>
                 </div>
