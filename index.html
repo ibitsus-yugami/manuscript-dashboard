@@ -36,7 +36,6 @@
 
         .container { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        /* ヘッダーデザイン：両脇のはやてくんを約3倍（ビッグサイズ）に！ */
         .header-top { 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 28px;
@@ -44,8 +43,19 @@
         }
         .header-title-wrap { display: flex; align-items: center; gap: 15px; flex: 1; justify-content: center; }
         
-        .mascot-icon { width: 140px; height: 140px; object-fit: contain; border-radius: 50%; background: var(--gray); border: 3px solid var(--primary); padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-        .mascot-right { width: 155px; height: 155px; object-fit: contain; border-radius: 50%; background: var(--gray); border: 3px solid var(--primary); padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: bounce 2s infinite ease-in-out; }
+        /* はやてくん：角丸の緑の四角いフレーム ＆ フワフワアニメーション */
+        .mascot-icon { 
+            width: 140px; height: 140px; object-fit: contain; 
+            border-radius: 16px; background: var(--gray); border: 3px solid var(--primary); 
+            padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
+            animation: bounce 2s infinite ease-in-out; 
+        }
+        .mascot-right { 
+            width: 155px; height: 155px; object-fit: contain; 
+            border-radius: 16px; background: var(--gray); border: 3px solid var(--primary); 
+            padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
+            animation: bounce 2s infinite ease-in-out; animation-delay: 1s; 
+        }
         
         .mascot-icon:not([src]), .mascot-icon[src=""], .mascot-right:not([src]), .mascot-right[src=""] { display: none; }
 
@@ -181,7 +191,7 @@
 
         @media (max-width: 768px) {
             body { padding: 8px; }
-            h1 { font-size: 1.0rem; }
+            h1 { font-size: 1.1rem; }
             .card { padding: 12px; }
             .manager-layout { grid-template-columns: 1fr; gap: 12px; width: 100%; }
             .sidebar-list { border-right: none; border-bottom: 1px solid var(--border-color); padding-right: 0; padding-bottom: 8px; max-height: 160px; width: 100%; }
@@ -192,8 +202,8 @@
             .tracker-row { font-size: 0.6rem; }
             .habit-btn { width: 14px; height: 14px; font-size: 0.5rem; }
 
-            .mascot-icon { width: 75px; height: 75px; }
-            .mascot-right { width: 85px; height: 85px; }
+            .mascot-icon { width: 90px; height: 90px; }
+            .mascot-right { width: 100px; height: 100px; }
 
             div[style*="grid-template-columns: 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
