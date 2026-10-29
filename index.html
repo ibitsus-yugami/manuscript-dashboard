@@ -38,17 +38,41 @@
 
         .header-top { 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 20px;
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 20px;
             box-sizing: border-box;
         }
-        .header-title-wrap { display: flex; align-items: center; gap: 12px; }
-        .mascot-icon { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; background: var(--gray); border: 2px solid var(--primary); padding: 2px; }
         h1 { font-size: 1.25rem; margin: 0; color: #f8fafc; font-weight: 700; letter-spacing: -0.02em; }
-        .mascot-running { width: 48px; height: 48px; object-fit: contain; animation: bounce 2s infinite ease-in-out; }
+
+        /* はやてくんビッグ表示エリアスタイル */
+        .mascot-banner-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(30, 34, 43, 0.8));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-sizing: border-box;
+            flex-wrap: wrap;
+        }
+        .mascot-big-img {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(15, 17, 21, 0.6);
+            border: 2px solid var(--primary);
+            padding: 6px;
+            flex-shrink: 0;
+            animation: bounce 2s infinite ease-in-out;
+        }
+        .mascot-big-img:not([src]), .mascot-big-img[src=""] { display: none; }
 
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
+            50% { transform: translateY(-6px); }
         }
 
         .tab-menu {
@@ -197,11 +221,19 @@
 
 <div class="container">
     <div class="header-top">
-        <div class="header-title-wrap">
-            <img src="はやてくん通常.png" alt="はやてくん" class="mascot-icon">
-            <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+        <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+    </div>
+
+    <!-- はやてくんのビッグ表示バナーエリア -->
+    <div class="mascot-banner-card">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <img src="はやてくん通常.png" alt="はやてくん" class="mascot-big-img" title="マスター、今日も一緒にがんばろうね！">
+            <div>
+                <h3 style="margin: 0 0 6px 0; color: #f8fafc; font-size: 1.1rem;">🐾 はやてくんが見守っているよ！</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">今日も制作や運動、お疲れ様！無理しないでマイペースにいこうね。</p>
+            </div>
         </div>
-        <img src="はやてくん走り.png" alt="走るはやてくん" class="mascot-running" title="今日もがんばろう！">
+        <img src="はやてくん走り.png" alt="走るはやてくん" style="width: 90px; height: 90px; object-fit: contain; animation: bounce 2s infinite ease-in-out;" title="ダッシュ！">
     </div>
 
     <div class="tab-menu">
@@ -1567,7 +1599,7 @@
             const btn = document.createElement('button');
             btn.className = `list-item-btn ${item.id === activeIdeaId ? 'active' : ''}`;
             btn.textContent = item.title || '(無題)';
-            btn.onclick = () => selectIdea(item.id);
+            btn.onclick = () => selectInput(item.id);
             sidebar.appendChild(btn);
         });
     }
@@ -1731,7 +1763,7 @@
                 <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">メモ・感想:</label>
                 <textarea id="input-content-input-${item.id}" class="memo-box" style="height: 140px;">${item.content || ''}</textarea>
                 <div style="margin-top: 12px;">
-                    <label style="font-size:0.8rem; font-weight:600; display:block; margin-bottom:4px;">画像追加 (複数・一括選択可):</label>
+                    <label style="font-size:0.80rem; font-weight:600; display:block; margin-bottom:4px;">画像追加 (複数・一括選択可):</label>
                     <input type="file" accept="image/*" multiple onchange="handleItemImageUpload('inputs', ${item.id}, this)">
                 </div>
                 ${imgHtml ? `<div class="img-preview-container">${imgHtml}</div>` : ''}
