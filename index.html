@@ -269,7 +269,7 @@
                     <div id="remipan-edit-container" style="display: none;">
                         <textarea id="selected-day-memo-remipan" class="memo-box" style="font-size: 0.85rem;" placeholder="メモ（画像ペーストOK）..." onpaste="handleDayPaste(event, 'remipan')"></textarea>
                         <div style="margin-top: 8px;">
-                            <label style="font-size: 0.75rem; font-weight: 600;">画像追加 (複数・一括選択可):</label>
+                            <label style="font-size: 0.75rem; font-weight: 600;">画像追加:</label>
                             <input type="file" id="remipan-file-input" accept="image/*" multiple onchange="handleDayImageUpload('remipan', this)" style="padding: 6px; font-size: 0.75rem;">
                             <div id="remipan-file-name" class="file-name-display">選択されていません</div>
                         </div>
@@ -290,7 +290,7 @@
                     <div id="yukun-edit-container" style="display: none;">
                         <textarea id="selected-day-memo-yukun" class="memo-box" style="font-size: 0.85rem;" placeholder="メモ（画像ペーストOK）..." onpaste="handleDayPaste(event, 'yukun')"></textarea>
                         <div style="margin-top: 8px;">
-                            <label style="font-size: 0.75rem; font-weight: 600;">画像追加 (複数・一括選択可):</label>
+                            <label style="font-size: 0.75rem; font-weight: 600;">画像追加:</label>
                             <input type="file" id="yukun-file-input" accept="image/*" multiple onchange="handleDayImageUpload('yukun', this)" style="padding: 6px; font-size: 0.75rem;">
                             <div id="yukun-file-name" class="file-name-display">選択されていません</div>
                         </div>
@@ -477,10 +477,9 @@
     </div>
 </div>
 
-<!-- 画像拡大モーダル -->
-<div id="image-modal" onclick="closeImageModal()" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
+<div id="image-modal" onclick="closeImageModal()">
     <span id="modal-img-close" onclick="closeImageModal()">&times;</span>
-    <img id="modal-img" style="max-width:90%; max-height:90%; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
+    <img id="modal-img">
 </div>
 
 <script type="module">
@@ -1316,60 +1315,6 @@
         renderCalendar();
     }
 
-    // ネタ帳・インプット用画像一括アップロード機能の復元
-    window.handleDayImageUpload = async function(type, inputElement) {
-        const files = inputElement.files;
-        if (!files || files.length === 0) return;
-        document.getElementById(`${type}-file-name`).textContent = `選択中(${files.length}枚)`;
-        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        
-        const compressedPromises = Array.from(files).slice(0, 8).map(file => compressAndResizeImage(file));
-        const newImages = await Promise.all(compressedPromises);
-
-        await updateCloudData(data => {
-            const targetObj = (type === 'remipan') ? (data.day_images_remipan = data.day_images_remipan || {}) : (data.day_images_yukun = data.day_images_yukun || {});
-            if (!targetObj[imgKey]) targetObj[imgKey] = [];
-            targetObj[imgKey].push(...newImages);
-        });
-        inputElement.value = '';
-        updateSelectedDayView();
-    }
-
-    window.handleDayPaste = async function(event, type) {
-        const items = event.clipboardData.items;
-        const files = [];
-        for (const item of items) {
-            if (item.type.indexOf('image') === 0) {
-                const file = item.getAsFile();
-                if (file) files.push(file);
-            }
-        }
-        if (files.length > 0) {
-            event.preventDefault();
-            const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
-            const compressedPromises = files.slice(0, 8).map(file => compressAndResizeImage(file));
-            const newImages = await Promise.all(compressedPromises);
-
-            await updateCloudData(data => {
-                const targetObj = (type === 'remipan') ? (data.day_images_remipan = data.day_images_remipan || {}) : (data.day_images_yukun = data.day_images_yukun || {});
-                if (!targetObj[imgKey]) targetObj[imgKey] = [];
-                targetObj[imgKey].push(...newImages);
-            });
-            updateSelectedDayView();
-        }
-    }
-
-    window.deleteDayImage = async function(type, imgIndex) {
-        const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
-        await updateCloudData(data => {
-            const targetObj = (type === 'remipan') ? data.day_images_remipan : data.day_images_yukun;
-            if (targetObj && targetObj[imgKey]) {
-                targetObj[imgKey].splice(imgIndex, 1);
-            }
-        });
-        updateSelectedDayView();
-    }
-
     function renderDaySection(type, memoText) {
         const isEditing = (type === 'remipan') ? isRemipanEditing : isYukunEditing;
         const viewContainer = document.getElementById(`${type}-view-container`);
@@ -1471,237 +1416,6 @@
             }
         });
         updateSelectedDayView();
-    }
-
-    function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
-        const row = document.createElement('div');
-        row.className = 'tracker-row';
-        row.innerHTML = `<span>${label}</span>`;
-        const btn = document.createElement('button');
-        btn.className = 'habit-btn';
-        updateButtonState(btn, status);
-
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            let nextStatus = 'none';
-            await updateCloudData(data => {
-                if (!data.trackers) data.trackers = {};
-                let currentStatus = data.trackers[storageKey] || 'none';
-                nextStatus = currentStatus === 'none' ? 'maru' : 'none';
-                data.trackers[storageKey] = nextStatus;
-            });
-
-            if (nextStatus === 'maru') {
-                const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
-                const title = encodeURIComponent(`[実績] ${typeName}完了`);
-                const details = encodeURIComponent(`${year}年${month}月${day}日 ${typeName}を達成しました！`);
-                if (confirm(`${year}年${month}月${day}日の「${typeName}達成」をGoogleカレンダーに登録しますか？`)) {
-                    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`, '_blank');
-                }
-            }
-        };
-        row.appendChild(btn);
-        return row;
-    }
-
-    function updateButtonState(btn, status) {
-        btn.classList.remove('status-maru');
-        if (status === 'maru') { btn.textContent = '〇'; btn.classList.add('status-maru'); }
-        else { btn.textContent = '-'; }
-    }
-
-    window.addIdeaItem = async function() {
-        const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [] };
-        ideaEditingMap[newItem.id] = true;
-        await updateCloudData(data => {
-            if (!data.ideas) data.ideas = [];
-            data.ideas.push(newItem);
-        });
-        activeIdeaId = newItem.id;
-        renderIdeasManager();
-    }
-
-    window.deleteIdeaItem = async function(id) {
-        delete ideaEditingMap[id];
-        await updateCloudData(data => {
-            if (!data.ideas) data.ideas = [];
-            data.ideas = data.ideas.filter(i => i.id !== id);
-        });
-        if (activeIdeaId === id) {
-            activeIdeaId = appData.ideas.length > 0 ? appData.ideas[0].id : null;
-        }
-        renderIdeasManager();
-    }
-
-    window.selectIdea = function(id) { activeIdeaId = id; renderIdeasManager(); }
-    window.toggleIdeaEdit = function(id) { ideaEditingMap[id] = !ideaEditingMap[id]; renderIdeasDetail(); }
-
-    window.saveIdeaEdit = async function(id) {
-        const titleVal = document.getElementById(`idea-title-input-${id}`).value;
-        const contentVal = document.getElementById(`idea-content-input-${id}`).value;
-        await updateCloudData(data => {
-            const item = data.ideas.find(i => i.id === id);
-            if (item) { item.title = titleVal; item.content = contentVal; }
-        });
-        ideaEditingMap[id] = false;
-        renderIdeasManager();
-    }
-
-    function renderIdeasManager() {
-        renderIdeaSidebar();
-        renderIdeasDetail();
-    }
-
-    function renderIdeaSidebar() {
-        const sidebar = document.getElementById('ideas-sidebar');
-        if (!sidebar) return;
-        sidebar.innerHTML = '';
-        if (!appData.ideas || appData.ideas.length === 0) {
-            sidebar.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted); padding:10px;">ネタがありません</span>';
-            return;
-        }
-        appData.ideas.forEach(item => {
-            const btn = document.createElement('button');
-            btn.className = `list-item-btn ${item.id === activeIdeaId ? 'active' : ''}`;
-            btn.textContent = item.title || '(無題)';
-            btn.onclick = () => selectInput(item.id);
-            sidebar.appendChild(btn);
-        });
-    }
-
-    function renderIdeasDetail() {
-        const pane = document.getElementById('ideas-detail');
-        if (!pane) return;
-        const item = (appData.ideas || []).find(i => i.id === activeIdeaId);
-        if (!item) { pane.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 80px; font-size: 0.85rem;">ネタが選択されていません。</p>'; return; }
-        const isEditing = !!ideaEditingMap[item.id];
-
-        if (!isEditing) {
-            pane.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
-                    <h3 style="margin: 0; color: #f8fafc; font-size:1rem;">💡 ネタ詳細確認</h3>
-                    <div class="action-group">
-                        <button class="edit-btn-primary" onclick="toggleIdeaEdit(${item.id})">編集する</button>
-                        <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">削除</button>
-                    </div>
-                </div>
-                <div class="overview-title">${item.title || '(無題)'}</div>
-                <div class="overview-box">${item.content || '<span style="color:var(--text-muted);">詳細内容はありません</span>'}</div>
-            `;
-        } else {
-            pane.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
-                    <h3 style="margin: 0; color: #f8fafc; font-size:1rem;">💡 ネタ詳細編集</h3>
-                    <div class="action-group">
-                        <button class="edit-btn-primary" onclick="saveIdeaEdit(${item.id})">登録する</button>
-                        <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">削除</button>
-                    </div>
-                </div>
-                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">タイトル / テーマ:</label>
-                <input type="text" id="idea-title-input-${item.id}" value="${item.title || ''}" style="width:100%; box-sizing:border-box; margin-bottom:12px;">
-                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">詳細内容:</label>
-                <textarea id="idea-content-input-${item.id}" class="memo-box" style="height: 180px;">${item.content || ''}</textarea>
-            `;
-        }
-    }
-
-    window.addInputItem = async function() {
-        const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [] };
-        inputEditingMap[newItem.id] = true;
-        await updateCloudData(data => {
-            if (!data.inputs) data.inputs = [];
-            data.inputs.push(newItem);
-        });
-        activeInputId = newItem.id;
-        renderInputsManager();
-    }
-
-    window.deleteInputItem = async function(id) {
-        delete inputEditingMap[id];
-        await updateCloudData(data => {
-            if (!data.inputs) data.inputs = [];
-            data.inputs = data.inputs.filter(i => i.id !== id);
-        });
-        if (activeInputId === id) {
-            activeInputId = appData.inputs.length > 0 ? appData.inputs[0].id : null;
-        }
-        renderInputsManager();
-    }
-
-    window.selectInput = function(id) { activeInputId = id; renderInputsManager(); }
-    window.toggleInputEdit = function(id) { inputEditingMap[id] = !inputEditingMap[id]; renderInputsDetail(); }
-
-    window.saveInputEdit = async function(id) {
-        const titleVal = document.getElementById(`input-title-input-${id}`).value;
-        const linkVal = document.getElementById(`input-link-input-${id}`).value;
-        const contentVal = document.getElementById(`input-content-input-${id}`).value;
-        await updateCloudData(data => {
-            const item = data.inputs.find(i => i.id === id);
-            if (item) { item.title = titleVal; item.link = linkVal; item.content = contentVal; }
-        });
-        inputEditingMap[id] = false;
-        renderInputsManager();
-    }
-
-    function renderInputsManager() {
-        renderInputSidebar();
-        renderInputsDetail();
-    }
-
-    function renderInputSidebar() {
-        const sidebar = document.getElementById('inputs-sidebar');
-        if (!sidebar) return;
-        sidebar.innerHTML = '';
-        if (!appData.inputs || appData.inputs.length === 0) {
-            sidebar.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted); padding:10px;">インプットがありません</span>';
-            return;
-        }
-        appData.inputs.forEach(item => {
-            const btn = document.createElement('button');
-            btn.className = `list-item-btn ${item.id === activeInputId ? 'active' : ''}`;
-            btn.textContent = item.title || '(無題)';
-            btn.onclick = () => selectInput(item.id);
-            sidebar.appendChild(btn);
-        });
-    }
-
-    function renderInputsDetail() {
-        const pane = document.getElementById('inputs-detail');
-        if (!pane) return;
-        const item = (appData.inputs || []).find(i => i.id === activeInputId);
-        if (!item) { pane.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 80px; font-size: 0.85rem;">インプット項目が選択されていません。</p>'; return; }
-        const isEditing = !!inputEditingMap[item.id];
-
-        if (!isEditing) {
-            pane.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
-                    <h3 style="margin: 0; color: #f8fafc; font-size:1rem;">🔗 インプット詳細確認</h3>
-                    <div class="action-group">
-                        <button class="edit-btn-primary" onclick="toggleInputEdit(${item.id})">編集する</button>
-                        <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
-                    </div>
-                </div>
-                <div class="overview-title">${item.title || '(無題)'}</div>
-                ${item.link ? `<a href="${item.link}" target="_blank" class="overview-link">🔗 ${item.link}</a>` : ''}
-                <div class="overview-box">${item.content || '<span style="color:var(--text-muted);">メモや感想はありません</span>'}</div>
-            `;
-        } else {
-            pane.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
-                    <h3 style="margin: 0; color: #f8fafc; font-size:1rem;">🔗 インプット詳細編集</h3>
-                    <div class="action-group">
-                        <button class="edit-btn-primary" onclick="saveInputEdit(${item.id})">登録する</button>
-                        <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
-                    </div>
-                </div>
-                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">名称 / タイトル:</label>
-                <input type="text" id="input-title-input-${item.id}" value="${item.title || ''}" style="width:100%; box-sizing:border-box; margin-bottom:12px;">
-                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">参考リンク (URLなど):</label>
-                <input type="text" id="input-link-input-${item.id}" value="${item.link || ''}" style="width:100%; box-sizing:border-box; margin-bottom:12px;">
-                <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">メモ・感想:</label>
-                <textarea id="input-content-input-${item.id}" class="memo-box" style="height: 140px;">${item.content || ''}</textarea>
-            `;
-        }
     }
 
     window.openImageModal = function(src) {
