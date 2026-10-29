@@ -106,13 +106,12 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .weekday { text-align: center; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); padding-bottom: 6px; }
         
-        /* カレンダーセル：PC・スマホともに正方形に近いバランスの良いサイズに調整 */
         .day-cell {
-            background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; min-height: 95px; max-height: 95px; overflow-y: auto; padding: 4px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-sizing: border-box;
+            background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; min-height: 110px; max-height: 110px; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-sizing: border-box;
         }
         .day-cell:hover { background: var(--hover-bg); border-color: var(--primary); }
         .day-cell.selected { border-color: var(--primary); background: #182232; box-shadow: 0 0 8px var(--primary-glow); }
-        .day-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 2px; flex-shrink: 0; }
+        .day-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px; flex-shrink: 0; }
         .day-number { font-size: 0.75rem; color: var(--text-color); font-weight: 600; }
         
         .calendar-event-badge {
@@ -131,7 +130,6 @@
         }
         .habit-btn.status-maru { background-color: var(--success); color: #000; border-color: var(--success); font-weight: bold; }
 
-        /* マネージャーレイアウト（左揃え・垂直中央揃え・はみ出し完全防止） */
         .manager-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; width: 100%; box-sizing: border-box; }
         .sidebar-list { display: flex; flex-direction: column; gap: 6px; max-height: 400px; overflow-y: auto; border-right: 1px solid var(--border-color); padding-right: 10px; width: 100%; box-sizing: border-box; }
         
@@ -168,12 +166,11 @@
             .manager-layout { grid-template-columns: 1fr; gap: 12px; width: 100%; }
             .sidebar-list { border-right: none; border-bottom: 1px solid var(--border-color); padding-right: 0; padding-bottom: 8px; max-height: 160px; width: 100%; }
             
-            /* スマホ版カレンダー：正方形ベースできれいに収まる高さに調整 */
-            .day-cell { min-height: 75px; max-height: 75px; padding: 2px; }
+            .day-cell { min-height: 90px; max-height: 90px; padding: 2px; }
             .day-number { font-size: 0.65rem; }
             .calendar-event-badge { font-size: 0.5rem; padding: 1px 2px; }
-            .tracker-row { font-size: 0.55rem; }
-            .habit-btn { width: 12px; height: 12px; font-size: 0.45rem; }
+            .tracker-row { font-size: 0.6rem; }
+            .habit-btn { width: 14px; height: 14px; font-size: 0.5rem; }
 
             div[style*="grid-template-columns: 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
@@ -322,7 +319,8 @@
 
             <div class="filter-bar">
                 <button class="filter-btn active" onclick="setMatrixFilter('all', this)">すべて</button>
-                <button class="filter-btn" onclick="setMatrixFilter('unfinished', this)">未完了</button>
+                <button class="filter-btn" onclick="setMatrixFilter('active', this)">進行中</button>
+                <button class="filter-btn" onclick="setMatrixFilter('todo', this)">未着手</button>
                 <button class="filter-btn" onclick="setMatrixFilter('completed', this)">完了</button>
             </div>
 
@@ -777,8 +775,15 @@
                 let rowStatuses = (currentProj.matrixProcesses || []).map((_, pIdx) => (currentProj.matrixData && currentProj.matrixData[`${rIdx}_${pIdx}`]) || 0);
                 if (currentMatrixFilter === 'completed') {
                     if (!rowStatuses.every(st => st === 2)) return;
-                } else if (currentMatrixFilter === 'unfinished') {
-                    if (rowStatuses.every(st => st === 2)) return;
+                } else if (currentMatrixFilter === 'active') {
+                    // 進行中（少なくとも1つが進行中(1)または完了(2)かつ全て完了ではない）
+                    const hasActive = rowStatuses.some(st => st === 1 || st === 2);
+                    const allCompleted = rowStatuses.every(st => st === 2);
+                    if (!hasActive || allCompleted) return;
+                } else if (currentMatrixFilter === 'todo') {
+                    // 未着手（全て未着手(0)）
+                    const allTodo = rowStatuses.every(st => st === 0);
+                    if (!allTodo) return;
                 }
             }
 
@@ -1185,11 +1190,11 @@
         if (autoDeadlines.length === 0 && events.length === 0 && gcalEvents.length === 0) {
             evList.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">予定はありません</span>';
         } else {
-            // 自動締切の表示（確認用、詳細は各タブで編集可能）
+            // 自動締切の表示
             autoDeadlines.forEach(ad => {
                 const rowDiv = document.createElement('div');
                 rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid rgba(245,158,11,0.4); width:100%; box-sizing:border-box;';
-                rowDiv.innerHTML = `<span style="font-size:0.8rem; color:#f6ad55; font-weight:bold;">🔥 ${ad.title} (該当タブで編集できます)</span>`;
+                rowDiv.innerHTML = `<span style="font-size:0.8rem; color:#f6ad55; font-weight:bold;">🔥 ${ad.title} (原稿進捗/仕事管理タブで変更できます)</span>`;
                 evList.appendChild(rowDiv);
             });
 
