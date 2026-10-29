@@ -772,17 +772,21 @@
 
         (currentProj.matrixRows || []).forEach((rowName, rIdx) => {
             const processes = currentProj.matrixProcesses || [];
+            
+            // フィルター判定の厳密化
             if (currentMatrixFilter !== 'all') {
                 let rowStatuses = processes.map((_, pIdx) => (currentProj.matrixData && currentProj.matrixData[`${rIdx}_${pIdx}`]) || 0);
                 if (currentMatrixFilter === 'completed') {
+                    // 全ての工程が「完了(2)」である行だけを表示
                     if (!rowStatuses.every(st => st === 2)) return;
                 } else if (currentMatrixFilter === 'active') {
-                    const hasActive = rowStatuses.some(st => st === 1 || st === 2);
+                    // 進行中の工程(1)または完了の工程(2)が含まれていて、かつ全て完了ではない行を表示
+                    const hasActiveOrCompleted = rowStatuses.some(st => st === 1 || st === 2);
                     const allCompleted = rowStatuses.every(st => st === 2);
-                    if (!hasActive || allCompleted) return;
+                    if (!hasActiveOrCompleted || allCompleted) return;
                 } else if (currentMatrixFilter === 'todo') {
-                    const allTodo = rowStatuses.every(st => st === 0);
-                    if (!allTodo) return;
+                    // 全ての工程が「未着手(0)」である行だけを表示
+                    if (!rowStatuses.every(st => st === 0)) return;
                 }
             }
 
