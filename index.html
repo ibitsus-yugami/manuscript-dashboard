@@ -36,7 +36,6 @@
 
         .container { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        /* ヘッダーデザイン：はやてくんのまわりに角丸の緑の四角枠（フレーム）＆フワフワアニメーション */
         .header-top { 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 28px;
@@ -44,10 +43,11 @@
         }
         .header-title-wrap { display: flex; align-items: center; gap: 15px; flex: 1; justify-content: center; }
         
+        /* はやてくんの四角いフレーム＆フワフワアニメーション */
         .mascot-box {
             background: var(--gray);
-            border: 2px solid var(--primary);
-            border-radius: 18px;
+            border: 3px solid var(--primary);
+            border-radius: 20px;
             padding: 6px;
             display: flex;
             align-items: center;
@@ -60,10 +60,10 @@
             animation-delay: 1s;
         }
 
-        .mascot-icon { width: 110px; height: 110px; object-fit: contain; }
-        .mascot-right { width: 125px; height: 125px; object-fit: contain; }
+        .mascot-icon { width: 140px; height: 140px; object-fit: contain; }
+        .mascot-right { width: 155px; height: 155px; object-fit: contain; }
         
-        .mascot-box:has(.mascot-icon:not([src])), .mascot-box:has(.mascot-icon[src=""]) { display: none; }
+        .mascot-box:has(.mascot-icon:not([src])), .mascot-box:has(.mascot-icon[src=""])) { display: none; }
 
         h1 { font-size: 1.6rem; margin: 0; color: #f8fafc; font-weight: 700; text-align: center; letter-spacing: -0.02em; }
 
@@ -208,9 +208,9 @@
             .tracker-row { font-size: 0.6rem; }
             .habit-btn { width: 14px; height: 14px; font-size: 0.5rem; }
 
-            .mascot-box { padding: 4px; }
-            .mascot-icon { width: 75px; height: 75px; }
-            .mascot-right { width: 85px; height: 85px; }
+            .mascot-box { width: 90px; height: 90px; padding: 4px; }
+            .mascot-icon { width: 80px; height: 80px; }
+            .mascot-right { width: 90px; height: 90px; }
 
             div[style*="grid-template-columns: 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
