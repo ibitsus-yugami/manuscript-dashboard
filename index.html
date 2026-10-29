@@ -36,7 +36,6 @@
 
         .container { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        /* ヘッダーマスコット配置用スタイル */
         .header-top { 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 20px;
@@ -45,7 +44,7 @@
         .header-title-wrap { display: flex; align-items: center; gap: 12px; }
         .mascot-icon { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; background: var(--gray); border: 2px solid var(--primary); padding: 2px; }
         h1 { font-size: 1.25rem; margin: 0; color: #f8fafc; font-weight: 700; letter-spacing: -0.02em; }
-        .mascot-running { width: 50px; height: 50px; object-fit: contain; animation: bounce 2s infinite ease-in-out; }
+        .mascot-running { width: 48px; height: 48px; object-fit: contain; animation: bounce 2s infinite ease-in-out; }
 
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
@@ -1332,7 +1331,6 @@
         renderCalendar();
     }
 
-    // ネタ帳・インプット共通の画像一括アップロード処理
     window.handleItemImageUpload = async function(itemType, itemId, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
@@ -1360,7 +1358,6 @@
         });
     }
 
-    // カレンダーメモ用画像アップロード
     window.handleDayImageUpload = async function(type, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
@@ -1516,43 +1513,6 @@
         updateSelectedDayView();
     }
 
-    function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
-        const row = document.createElement('div');
-        row.className = 'tracker-row';
-        row.innerHTML = `<span>${label}</span>`;
-        const btn = document.createElement('button');
-        btn.className = 'habit-btn';
-        updateButtonState(btn, status);
-
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            let nextStatus = 'none';
-            await updateCloudData(data => {
-                if (!data.trackers) data.trackers = {};
-                let currentStatus = data.trackers[storageKey] || 'none';
-                nextStatus = currentStatus === 'none' ? 'maru' : 'none';
-                data.trackers[storageKey] = nextStatus;
-            });
-
-            if (nextStatus === 'maru') {
-                const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
-                const title = encodeURIComponent(`[実績] ${typeName}完了`);
-                const details = encodeURIComponent(`${year}年${month}月${day}日 ${typeName}を達成しました！`);
-                if (confirm(`${year}年${month}月${day}日の「${typeName}達成」をGoogleカレンダーに登録しますか？`)) {
-                    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`, '_blank');
-                }
-            }
-        };
-        row.appendChild(btn);
-        return row;
-    }
-
-    function updateButtonState(btn, status) {
-        btn.classList.remove('status-maru');
-        if (status === 'maru') { btn.textContent = '〇'; btn.classList.add('status-maru'); }
-        else { btn.textContent = '-'; }
-    }
-
     window.addIdeaItem = async function() {
         const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [] };
         ideaEditingMap[newItem.id] = true;
@@ -1607,7 +1567,7 @@
             const btn = document.createElement('button');
             btn.className = `list-item-btn ${item.id === activeIdeaId ? 'active' : ''}`;
             btn.textContent = item.title || '(無題)';
-            btn.onclick = () => selectInput(item.id);
+            btn.onclick = () => selectIdea(item.id);
             sidebar.appendChild(btn);
         });
     }
