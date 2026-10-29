@@ -771,24 +771,23 @@
         html += `<th>操作</th></tr>`;
 
         (currentProj.matrixRows || []).forEach((rowName, rIdx) => {
+            const processes = currentProj.matrixProcesses || [];
             if (currentMatrixFilter !== 'all') {
-                let rowStatuses = (currentProj.matrixProcesses || []).map((_, pIdx) => (currentProj.matrixData && currentProj.matrixData[`${rIdx}_${pIdx}`]) || 0);
+                let rowStatuses = processes.map((_, pIdx) => (currentProj.matrixData && currentProj.matrixData[`${rIdx}_${pIdx}`]) || 0);
                 if (currentMatrixFilter === 'completed') {
                     if (!rowStatuses.every(st => st === 2)) return;
                 } else if (currentMatrixFilter === 'active') {
-                    // 進行中（少なくとも1つが進行中(1)または完了(2)かつ全て完了ではない）
                     const hasActive = rowStatuses.some(st => st === 1 || st === 2);
                     const allCompleted = rowStatuses.every(st => st === 2);
                     if (!hasActive || allCompleted) return;
                 } else if (currentMatrixFilter === 'todo') {
-                    // 未着手（全て未着手(0)）
                     const allTodo = rowStatuses.every(st => st === 0);
                     if (!allTodo) return;
                 }
             }
 
             html += `<tr><td><b>${rowName}</b></td>`;
-            (currentProj.matrixProcesses || []).forEach((_, pIdx) => {
+            processes.forEach((_, pIdx) => {
                 const key = `${rIdx}_${pIdx}`;
                 const status = (currentProj.matrixData && currentProj.matrixData[key]) || 0;
                 let label = '未着手';
@@ -1168,7 +1167,6 @@
 
         const yyyyMmDd = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
         
-        // 自動締切（原稿締切・依頼締切）を抽出
         let autoDeadlines = [];
         const projects = appData.projects || {};
         for (const [pId, p] of Object.entries(projects)) {
@@ -1190,7 +1188,6 @@
         if (autoDeadlines.length === 0 && events.length === 0 && gcalEvents.length === 0) {
             evList.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">予定はありません</span>';
         } else {
-            // 自動締切の表示
             autoDeadlines.forEach(ad => {
                 const rowDiv = document.createElement('div');
                 rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid rgba(245,158,11,0.4); width:100%; box-sizing:border-box;';
@@ -1198,7 +1195,6 @@
                 evList.appendChild(rowDiv);
             });
 
-            // 手動追加予定
             events.forEach((ev, idx) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box;';
@@ -1209,7 +1205,6 @@
                 evList.appendChild(rowDiv);
             });
 
-            // Gカレンダー予定
             gcalEvents.forEach((gv, gIdx) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box;';
