@@ -52,7 +52,7 @@
         .tab-content.active { display: block; }
 
         .card {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); box-sizing: border-box;
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); box-sizing: border-box; width: 100%; overflow: hidden;
         }
 
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
@@ -130,21 +130,26 @@
         }
         .habit-btn.status-maru { background-color: var(--success); color: #000; border-color: var(--success); font-weight: bold; }
 
-        .manager-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; width: 100%; box-sizing: border-box; }
+        /* マネージャーレイアウト（完全な枠内収まり・はみ出し完全防止） */
+        .manager-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; width: 100%; box-sizing: border-box; }
         .sidebar-list { display: flex; flex-direction: column; gap: 6px; max-height: 400px; overflow-y: auto; border-right: 1px solid var(--border-color); padding-right: 10px; width: 100%; box-sizing: border-box; }
+        
         .list-item-btn {
-            text-align: left; padding: 10px 12px; background: var(--gray); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-color); transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; box-sizing: border-box;
+            text-align: left; padding: 10px 12px; background: var(--gray); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-color); transition: all 0.2s; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+            width: 100%; max-width: 100%; box-sizing: border-box; display: block;
         }
         .list-item-btn:hover { background: var(--hover-bg); border-color: var(--text-muted); }
         .list-item-btn.active { background: var(--primary); color: #000; border-color: var(--primary); font-weight: 700; }
-        .detail-pane { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; min-height: 350px; width: 100%; box-sizing: border-box; }
+        
+        .detail-pane { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; min-height: 350px; width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden; word-break: break-all; }
 
         .delete-btn-danger { background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
         .edit-btn-primary { background-color: var(--primary); color: #000; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 700; }
         .action-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .overview-box { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 12px; white-space: pre-wrap; word-break: break-all; font-size: 0.85rem; line-height: 1.5; color: var(--text-color); box-sizing: border-box; }
+        .overview-box { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 12px; white-space: pre-wrap; word-break: break-all; font-size: 0.85rem; line-height: 1.5; color: var(--text-color); box-sizing: border-box; width: 100%; max-width: 100%; }
         .overview-title { font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin-bottom: 10px; word-break: break-all; }
-        .overview-link { display: inline-block; margin-bottom: 10px; color: var(--primary); word-break: break-all; font-size: 0.85rem; }
+        .overview-link { display: inline-block; margin-bottom: 10px; color: var(--primary); word-break: break-all; font-size: 0.85rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .img-preview-container { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
         .img-thumb-wrap { position: relative; display: inline-block; }
         .uploaded-img-preview { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; }
@@ -159,8 +164,8 @@
             body { padding: 10px; }
             h1 { font-size: 1.1rem; }
             .card { padding: 14px; }
-            .manager-layout { grid-template-columns: 1fr; gap: 14px; }
-            .sidebar-list { border-right: none; border-bottom: 1px solid var(--border-color); padding-right: 0; padding-bottom: 10px; max-height: 180px; }
+            .manager-layout { grid-template-columns: 1fr; gap: 14px; width: 100%; }
+            .sidebar-list { border-right: none; border-bottom: 1px solid var(--border-color); padding-right: 0; padding-bottom: 10px; max-height: 180px; width: 100%; }
             
             .day-cell { min-height: 110px; max-height: 110px; padding: 3px; }
             .day-number { font-size: 0.65rem; }
@@ -1509,6 +1514,7 @@
 
     function renderIdeaSidebar() {
         const sidebar = document.getElementById('ideas-sidebar');
+        if (!sidebar) return;
         sidebar.innerHTML = '';
         if (!appData.ideas || appData.ideas.length === 0) {
             sidebar.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted); padding:10px;">ネタがありません</span>';
@@ -1525,14 +1531,15 @@
 
     function renderIdeasDetail() {
         const pane = document.getElementById('ideas-detail');
+        if (!pane) return;
         const item = (appData.ideas || []).find(i => i.id === activeIdeaId);
-        if (!item) { pane.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 100px;">ネタが選択されていません。</p>'; return; }
+        if (!item) { pane.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 80px; font-size: 0.85rem;">ネタが選択されていません。</p>'; return; }
         const isEditing = !!ideaEditingMap[item.id];
 
         if (!isEditing) {
             pane.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #f8fafc;">💡 ネタ詳細確認</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
+                    <h3 style="margin: 0; color: #f8fafc; font-size:1rem;">💡 ネタ詳細確認</h3>
                     <div class="action-group">
                         <button class="edit-btn-primary" onclick="toggleIdeaEdit(${item.id})">編集する</button>
                         <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">削除</button>
@@ -1543,8 +1550,8 @@
             `;
         } else {
             pane.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #f8fafc;">💡 ネタ詳細編集</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
+                    <h3 style="margin: 0; color: #f8fafc; font-size:1rem;">💡 ネタ詳細編集</h3>
                     <div class="action-group">
                         <button class="edit-btn-primary" onclick="saveIdeaEdit(${item.id})">登録する</button>
                         <button class="delete-btn-danger" onclick="deleteIdeaItem(${item.id})">削除</button>
@@ -1603,6 +1610,7 @@
 
     function renderInputSidebar() {
         const sidebar = document.getElementById('inputs-sidebar');
+        if (!sidebar) return;
         sidebar.innerHTML = '';
         if (!appData.inputs || appData.inputs.length === 0) {
             sidebar.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted); padding:10px;">インプットがありません</span>';
@@ -1619,14 +1627,15 @@
 
     function renderInputsDetail() {
         const pane = document.getElementById('inputs-detail');
+        if (!pane) return;
         const item = (appData.inputs || []).find(i => i.id === activeInputId);
-        if (!item) { pane.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 100px;">インプット項目が選択されていません。</p>'; return; }
+        if (!item) { pane.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 80px; font-size: 0.85rem;">インプット項目が選択されていません。</p>'; return; }
         const isEditing = !!inputEditingMap[item.id];
 
         if (!isEditing) {
             pane.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #f8fafc;">🔗 インプット詳細確認</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
+                    <h3 style="margin: 0; color: #f8fafc; font-size:1rem;">🔗 インプット詳細確認</h3>
                     <div class="action-group">
                         <button class="edit-btn-primary" onclick="toggleInputEdit(${item.id})">編集する</button>
                         <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
@@ -1638,8 +1647,8 @@
             `;
         } else {
             pane.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #f8fafc;">🔗 インプット詳細編集</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
+                    <h3 style="margin: 0; color: #f8fafc; font-size:1rem;">🔗 インプット詳細編集</h3>
                     <div class="action-group">
                         <button class="edit-btn-primary" onclick="saveInputEdit(${item.id})">登録する</button>
                         <button class="delete-btn-danger" onclick="deleteInputItem(${item.id})">削除</button>
