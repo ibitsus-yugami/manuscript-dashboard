@@ -36,8 +36,21 @@
 
         .container { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        h1 { font-size: 1.3rem; margin: 0; color: #f8fafc; font-weight: 700; letter-spacing: -0.02em; }
+        /* ヘッダーマスコット配置用スタイル */
+        .header-top { 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 20px;
+            box-sizing: border-box;
+        }
+        .header-title-wrap { display: flex; align-items: center; gap: 12px; }
+        .mascot-icon { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; background: var(--gray); border: 2px solid var(--primary); padding: 2px; }
+        h1 { font-size: 1.25rem; margin: 0; color: #f8fafc; font-weight: 700; letter-spacing: -0.02em; }
+        .mascot-running { width: 50px; height: 50px; object-fit: contain; animation: bounce 2s infinite ease-in-out; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
 
         .tab-menu {
             display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
@@ -164,7 +177,7 @@
 
         @media (max-width: 768px) {
             body { padding: 8px; }
-            h1 { font-size: 1.1rem; }
+            h1 { font-size: 1rem; }
             .card { padding: 12px; }
             .manager-layout { grid-template-columns: 1fr; gap: 12px; width: 100%; }
             .sidebar-list { border-right: none; border-bottom: 1px solid var(--border-color); padding-right: 0; padding-bottom: 8px; max-height: 160px; width: 100%; }
@@ -185,7 +198,11 @@
 
 <div class="container">
     <div class="header-top">
-        <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+        <div class="header-title-wrap">
+            <img src="はやてくん通常.png" alt="はやてくん" class="mascot-icon">
+            <h1>制作 ＆ 運動 管理ダッシュボード</h1>
+        </div>
+        <img src="はやてくん走り.png" alt="走るはやてくん" class="mascot-running" title="今日もがんばろう！">
     </div>
 
     <div class="tab-menu">
@@ -1536,7 +1553,6 @@
         else { btn.textContent = '-'; }
     }
 
-    // ネタ帳管理
     window.addIdeaItem = async function() {
         const newItem = { id: Date.now(), title: '新しいネタ', content: '', images: [] };
         ideaEditingMap[newItem.id] = true;
@@ -1591,7 +1607,7 @@
             const btn = document.createElement('button');
             btn.className = `list-item-btn ${item.id === activeIdeaId ? 'active' : ''}`;
             btn.textContent = item.title || '(無題)';
-            btn.onclick = () => selectIdea(item.id);
+            btn.onclick = () => selectInput(item.id);
             sidebar.appendChild(btn);
         });
     }
@@ -1648,7 +1664,6 @@
         }
     }
 
-    // インプット管理
     window.addInputItem = async function() {
         const newItem = { id: Date.now(), title: '新しいインプット', link: '', content: '', images: [] };
         inputEditingMap[newItem.id] = true;
