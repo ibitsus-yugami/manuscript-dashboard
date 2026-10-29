@@ -106,37 +106,37 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .weekday { text-align: center; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); padding-bottom: 6px; }
         
-        /* カレンダーセル：すっきりと綺麗な高さと内部レイアウト */
+        /* カレンダーセル：縦幅をゆったり広めに確保（スマホでも見やすく） */
         .day-cell {
-            background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; min-height: 110px; max-height: 110px; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-sizing: border-box;
+            background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; min-height: 130px; max-height: 130px; overflow-y: auto; padding: 4px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-sizing: border-box;
         }
         .day-cell:hover { background: var(--hover-bg); border-color: var(--primary); }
         .day-cell.selected { border-color: var(--primary); background: #182232; box-shadow: 0 0 8px var(--primary-glow); }
-        .day-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px; flex-shrink: 0; }
+        .day-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 2px; flex-shrink: 0; }
         .day-number { font-size: 0.75rem; color: var(--text-color); font-weight: 600; }
         
         .calendar-event-badge {
             font-size: 0.55rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; margin-top: 2px; display: block; text-align: center;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; cursor: help;
         }
         .badge-manuscript { background-color: rgba(245, 158, 11, 0.2); color: #f6ad55; border: 1px solid rgba(245, 158, 11, 0.4); } 
         .badge-job { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }        
         .badge-custom { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }   
         .badge-gcal { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }    
 
-        .trackers-container { display: flex; flex-direction: column; gap: 2px; width: 100%; margin-top: auto; padding-top: 2px; flex-shrink: 0; }
+        .trackers-container { display: flex; flex-direction: column; gap: 1px; width: 100%; margin-top: auto; padding-top: 2px; flex-shrink: 0; }
         .tracker-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--text-muted); }
         .habit-btn {
             width: 16px; height: 16px; border-radius: 3px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer; font-size: 0.55rem; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--text-color);
         }
         .habit-btn.status-maru { background-color: var(--success); color: #000; border-color: var(--success); font-weight: bold; }
 
-        /* マネージャーレイアウト（完全な枠内収まり・はみ出し完全防止） */
+        /* マネージャーレイアウト（完全な中央揃え・枠内収まり） */
         .manager-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; width: 100%; box-sizing: border-box; }
         .sidebar-list { display: flex; flex-direction: column; gap: 6px; max-height: 400px; overflow-y: auto; border-right: 1px solid var(--border-color); padding-right: 10px; width: 100%; box-sizing: border-box; }
         
         .list-item-btn {
-            text-align: left; padding: 10px 12px; background: var(--gray); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-color); transition: all 0.2s; 
+            text-align: center; padding: 10px 12px; background: var(--gray); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-color); transition: all 0.2s; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
             width: 100%; max-width: 100%; box-sizing: border-box; display: block;
         }
@@ -168,8 +168,8 @@
             .manager-layout { grid-template-columns: 1fr; gap: 12px; width: 100%; }
             .sidebar-list { border-right: none; border-bottom: 1px solid var(--border-color); padding-right: 0; padding-bottom: 8px; max-height: 160px; width: 100%; }
             
-            /* スマホ版カレンダー：縦長すぎず見やすいサイズに調整 */
-            .day-cell { min-height: 100px; max-height: 100px; padding: 3px; }
+            /* スマホ版カレンダー：少し高さを確保して見やすく */
+            .day-cell { min-height: 110px; max-height: 110px; padding: 3px; }
             .day-number { font-size: 0.65rem; }
             .calendar-event-badge { font-size: 0.5rem; padding: 1px 2px; }
             .tracker-row { font-size: 0.6rem; }
@@ -1086,22 +1086,22 @@
 
             for (const p of Object.values(projects)) {
                 if (p.deadline === yyyyMmDd) {
-                    badgeHtml += `<span class="calendar-event-badge badge-manuscript" title="原稿締切">🔥 原稿締切</span>`;
+                    badgeHtml += `<span class="calendar-event-badge badge-manuscript" title="🔥 原稿締切: ${p.name}">🔥 原稿締切</span>`;
                 }
                 if (p.jobDeadline === yyyyMmDd) {
-                    badgeHtml += `<span class="calendar-event-badge badge-job" title="依頼締切">🔥 依頼締切</span>`;
+                    badgeHtml += `<span class="calendar-event-badge badge-job" title="🔥 依頼締切: ${p.name}">🔥 依頼締切</span>`;
                 }
             }
 
             const eventKey = `evt_${currentYear}_${currentMonth + 1}_${day}`;
             const customEvents = (appData.custom_events && appData.custom_events[eventKey]) || [];
             customEvents.forEach((evText) => {
-                badgeHtml += `<span class="calendar-event-badge badge-custom" title="${evText}">📌 ${evText}</span>`;
+                badgeHtml += `<span class="calendar-event-badge badge-custom" title="📌 ${evText}">📌 ${evText}</span>`;
             });
 
             const gcalEvents = (appData.gcal_events && appData.gcal_events[yyyyMmDd]) || [];
             gcalEvents.forEach((gText) => {
-                badgeHtml += `<span class="calendar-event-badge badge-gcal" title="${gText}">📅 ${gText}</span>`;
+                badgeHtml += `<span class="calendar-event-badge badge-gcal" title="📅 ${gText}">📅 ${gText}</span>`;
             });
 
             if (badgeHtml) {
