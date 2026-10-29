@@ -36,6 +36,7 @@
 
         .container { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
+        /* ヘッダーデザイン：はやてくんのまわりに角丸の緑の四角枠（フレーム）＆フワフワアニメーション */
         .header-top { 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 28px;
@@ -43,16 +44,26 @@
         }
         .header-title-wrap { display: flex; align-items: center; gap: 15px; flex: 1; justify-content: center; }
         
-        .mascot-icon { 
-            width: 140px; height: 140px; object-fit: contain; border-radius: 16px; background: var(--gray); border: 3px solid var(--primary); padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
-            animation: bounce 2s infinite ease-in-out; 
+        .mascot-box {
+            background: var(--gray);
+            border: 2px solid var(--primary);
+            border-radius: 18px;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            animation: bounce 2s infinite ease-in-out;
+            flex-shrink: 0;
         }
-        .mascot-right { 
-            width: 155px; height: 155px; object-fit: contain; border-radius: 16px; background: var(--gray); border: 3px solid var(--primary); padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
-            animation: bounce 2s infinite ease-in-out; animation-delay: 1s; 
+        .mascot-box.right {
+            animation-delay: 1s;
         }
+
+        .mascot-icon { width: 110px; height: 110px; object-fit: contain; }
+        .mascot-right { width: 125px; height: 125px; object-fit: contain; }
         
-        .mascot-icon:not([src]), .mascot-icon[src=""], .mascot-right:not([src]), .mascot-right[src=""] { display: none; }
+        .mascot-box:has(.mascot-icon:not([src])), .mascot-box:has(.mascot-icon[src=""]) { display: none; }
 
         h1 { font-size: 1.6rem; margin: 0; color: #f8fafc; font-weight: 700; text-align: center; letter-spacing: -0.02em; }
 
@@ -197,8 +208,9 @@
             .tracker-row { font-size: 0.6rem; }
             .habit-btn { width: 14px; height: 14px; font-size: 0.5rem; }
 
-            .mascot-icon { width: 90px; height: 90px; }
-            .mascot-right { width: 100px; height: 100px; }
+            .mascot-box { padding: 4px; }
+            .mascot-icon { width: 75px; height: 75px; }
+            .mascot-right { width: 85px; height: 85px; }
 
             div[style*="grid-template-columns: 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
@@ -210,11 +222,15 @@
 
 <div class="container">
     <div class="header-top">
-        <img src="はやてくん通常.png" alt="はやてくん" class="mascot-icon" title="はやてくん">
+        <div class="mascot-box">
+            <img src="はやてくん通常.png" alt="はやてくん" class="mascot-icon" title="はやてくん">
+        </div>
         <div class="header-title-wrap">
             <h1>制作 ＆ 運動 管理ダッシュボード</h1>
         </div>
-        <img src="はやてくん走り.png" alt="走るはやてくん" class="mascot-right" title="はやてくん走り">
+        <div class="mascot-box right">
+            <img src="はやてくん走り.png" alt="走るはやてくん" class="mascot-right" title="はやてくん走り">
+        </div>
     </div>
 
     <div class="tab-menu">
@@ -1473,7 +1489,7 @@
             editContainer.style.display = 'block';
             viewContainer.style.display = 'none';
 
-            let actionHtml = `<button class="delete-btn-danger" onclick="clearDayData('${type}')" style="padding: 4px 10px; font-size: 0.7rem;">削除</button>";
+            let actionHtml = `<button class="delete-btn-danger" onclick="clearDayData('${type}')" style="padding: 4px 10px; font-size: 0.7rem;">削除</button>`;
             actionGroup.innerHTML = actionHtml;
 
             let imgHtml = '';
@@ -1537,43 +1553,6 @@
             }
         });
         updateSelectedDayView();
-    }
-
-    function createTrackerRow(label, storageKey, status, year, month, day, typeName) {
-        const row = document.createElement('div');
-        row.className = 'tracker-row';
-        row.innerHTML = `<span>${label}</span>`;
-        const btn = document.createElement('button');
-        btn.className = 'habit-btn';
-        updateButtonState(btn, status);
-
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            let nextStatus = 'none';
-            await updateCloudData(data => {
-                if (!data.trackers) data.trackers = {};
-                let currentStatus = data.trackers[storageKey] || 'none';
-                nextStatus = currentStatus === 'none' ? 'maru' : 'none';
-                data.trackers[storageKey] = nextStatus;
-            });
-
-            if (nextStatus === 'maru') {
-                const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
-                const title = encodeURIComponent(`[実績] ${typeName}完了`);
-                const details = encodeURIComponent(`${year}年${month}月${day}日 ${typeName}を達成しました！`);
-                if (confirm(`${year}年${month}月${day}日の「${typeName}達成」をGoogleカレンダーに登録しますか？`)) {
-                    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dateStr}/${dateStr}`, '_blank');
-                }
-            }
-        };
-        row.appendChild(btn);
-        return row;
-    }
-
-    function updateButtonState(btn, status) {
-        btn.classList.remove('status-maru');
-        if (status === 'maru') { btn.textContent = '〇'; btn.classList.add('status-maru'); }
-        else { btn.textContent = '-'; }
     }
 
     window.addIdeaItem = async function() {
