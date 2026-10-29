@@ -36,7 +36,6 @@
 
         .container { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        /* ヘッダーデザイン：両脇のはやてくんを約3倍（ビッグサイズ）に！ */
         .header-top { 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 28px;
@@ -44,8 +43,14 @@
         }
         .header-title-wrap { display: flex; align-items: center; gap: 15px; flex: 1; justify-content: center; }
         
-        .mascot-icon { width: 140px; height: 140px; object-fit: contain; border-radius: 50%; background: var(--gray); border: 3px solid var(--primary); padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-        .mascot-right { width: 155px; height: 155px; object-fit: contain; border-radius: 50%; background: var(--gray); border: 3px solid var(--primary); padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: bounce 2s infinite ease-in-out; }
+        .mascot-icon { 
+            width: 140px; height: 140px; object-fit: contain; border-radius: 16px; background: var(--gray); border: 3px solid var(--primary); padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
+            animation: bounce 2s infinite ease-in-out; 
+        }
+        .mascot-right { 
+            width: 155px; height: 155px; object-fit: contain; border-radius: 16px; background: var(--gray); border: 3px solid var(--primary); padding: 4px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
+            animation: bounce 2s infinite ease-in-out; animation-delay: 1s; 
+        }
         
         .mascot-icon:not([src]), .mascot-icon[src=""], .mascot-right:not([src]), .mascot-right[src=""] { display: none; }
 
@@ -192,8 +197,8 @@
             .tracker-row { font-size: 0.6rem; }
             .habit-btn { width: 14px; height: 14px; font-size: 0.5rem; }
 
-            .mascot-icon { width: 75px; height: 75px; }
-            .mascot-right { width: 85px; height: 85px; }
+            .mascot-icon { width: 90px; height: 90px; }
+            .mascot-right { width: 100px; height: 100px; }
 
             div[style*="grid-template-columns: 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
@@ -236,7 +241,7 @@
             <div class="calendar-header" style="flex-wrap: wrap; gap: 10px;">
                 <div style="display:flex; align-items:center; gap:8px;">
                     <button onclick="changeMonth(-1)" style="padding: 6px 12px; font-size: 0.8rem;">&lt;</button>
-                    <h3 id="calendar-title" style="margin:0; color: #f8fafc; font-size: 1rem;">2026年 9月</h3>
+                    <h3 id="calendar-title" style="margin:0; color: #f8fafc; font-size: 1rem;">2026年 10月</h3>
                     <button onclick="changeMonth(1)" style="padding: 6px 12px; font-size: 0.8rem;">&gt;</button>
                 </div>
                 <div>
@@ -1062,9 +1067,11 @@
 
     function renderCalendar() {
         const title = document.getElementById('calendar-title');
+        if (!title) return;
         title.textContent = `${currentYear}年 ${currentMonth + 1}月`;
 
         const grid = document.getElementById('calendar-grid');
+        if (!grid) return;
         grid.innerHTML = '';
 
         const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
@@ -1169,36 +1176,42 @@
             }
         }
 
-        document.getElementById('exercise-summary').textContent = `今月の運動達成日数: ${exerciseCount}日`;
+        const summaryEl = document.getElementById('exercise-summary');
+        if (summaryEl) summaryEl.textContent = `今月の運動達成日数: ${exerciseCount}日`;
         
         const banner = document.getElementById('monthly-achievements-banner');
-        let bannerHtml = `🌟 <b>今月できたこと一覧 (${currentMonth + 1}月)</b><br>`;
-        let hasAny = false;
+        if (banner) {
+            let bannerHtml = `🌟 <b>今月できたこと一覧 (${currentMonth + 1}月)</b><br>`;
+            let hasAny = false;
 
-        if (monthRemipanAch.length > 0) {
-            hasAny = true;
-            bannerHtml += `<br><b>🐱 れみぱん:</b><br>• ` + monthRemipanAch.join('<br>• ');
-        }
-        if (monthYukunAch.length > 0) {
-            hasAny = true;
-            bannerHtml += `<br><br><b>🐶 ゆくん:</b><br>• ` + monthYukunAch.join('<br>• ');
-        }
+            if (monthRemipanAch.length > 0) {
+                hasAny = true;
+                bannerHtml += `<br><b>🐱 れみぱん:</b><br>• ` + monthRemipanAch.join('<br>• ');
+            }
+            if (monthYukunAch.length > 0) {
+                hasAny = true;
+                bannerHtml += `<br><br><b>🐶 ゆくん:</b><br>• ` + monthYukunAch.join('<br>• ');
+            }
 
-        if (!hasAny) {
-            bannerHtml = `🌟 今月の実績ハイライト: まだ今月の実績は登録されていません。日付を選んで記録してみよう！`;
+            if (!hasAny) {
+                bannerHtml = `🌟 今月の実績ハイライト: まだ今月の実績は登録されていません。日付を選んで記録してみよう！`;
+            }
+            banner.innerHTML = bannerHtml;
         }
-        banner.innerHTML = bannerHtml;
     }
 
     function updateSelectedDayView() {
-        document.getElementById('selected-date-title').textContent = `📝 ${selectedYear}年${selectedMonth}月${selectedDay}日の記録・メモ`;
+        const titleEl = document.getElementById('selected-date-title');
+        if (titleEl) titleEl.textContent = `📝 ${selectedYear}年${selectedMonth}月${selectedDay}日の記録・メモ`;
         
         const achKey = `ach_${selectedYear}_${selectedMonth}_${selectedDay}`;
         const remipanAch = (appData.day_achievements_remipan && appData.day_achievements_remipan[achKey]) || '';
         const yukunAch = (appData.day_achievements_yukun && appData.day_achievements_yukun[achKey]) || '';
         
-        document.getElementById('selected-day-achievement-remipan').value = remipanAch;
-        document.getElementById('selected-day-achievement-yukun').value = yukunAch;
+        const remipanAchInput = document.getElementById('selected-day-achievement-remipan');
+        if (remipanAchInput) remipanAchInput.value = remipanAch;
+        const yukunAchInput = document.getElementById('selected-day-achievement-yukun');
+        if (yukunAchInput) yukunAchInput.value = yukunAch;
 
         const yyyyMmDd = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
         
@@ -1218,38 +1231,39 @@
         const gcalEvents = (appData.gcal_events && appData.gcal_events[yyyyMmDd]) || [];
 
         const evList = document.getElementById('selected-day-events-list');
-        evList.innerHTML = '';
-        
-        if (autoDeadlines.length === 0 && events.length === 0 && gcalEvents.length === 0) {
-            evList.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">予定はありません</span>';
-        } else {
-            autoDeadlines.forEach(ad => {
-                const rowDiv = document.createElement('div');
-                rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid rgba(245,158,11,0.4); width:100%; box-sizing:border-box;';
-                rowDiv.innerHTML = `<span style="font-size:0.8rem; color:#f6ad55; font-weight:bold;">🔥 ${ad.title} (原稿進捗/仕事管理タブで変更できます)</span>`;
-                evList.appendChild(rowDiv);
-            });
+        if (evList) {
+            evList.innerHTML = '';
+            if (autoDeadlines.length === 0 && events.length === 0 && gcalEvents.length === 0) {
+                evList.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">予定はありません</span>';
+            } else {
+                autoDeadlines.forEach(ad => {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid rgba(245,158,11,0.4); width:100%; box-sizing:border-box;';
+                    rowDiv.innerHTML = `<span style="font-size:0.8rem; color:#f6ad55; font-weight:bold;">🔥 ${ad.title} (原稿進捗/仕事管理タブで変更できます)</span>`;
+                    evList.appendChild(rowDiv);
+                });
 
-            events.forEach((ev, idx) => {
-                const rowDiv = document.createElement('div');
-                rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box;';
-                rowDiv.innerHTML = `
-                    <input type="text" value="${ev}" style="flex:1; padding:6px; font-size:0.85rem;" onchange="updateCustomEvent(${idx}, this.value)">
-                    <button onclick="deleteCustomEvent(${idx})" style="background:var(--danger); color:#fff; padding:6px 10px; font-size:0.75rem;">削除</button>
-                `;
-                evList.appendChild(rowDiv);
-            });
+                events.forEach((ev, idx) => {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box;';
+                    rowDiv.innerHTML = `
+                        <input type="text" value="${ev}" style="flex:1; padding:6px; font-size:0.85rem;" onchange="updateCustomEvent(${idx}, this.value)">
+                        <button onclick="deleteCustomEvent(${idx})" style="background:var(--danger); color:#fff; padding:6px 10px; font-size:0.75rem;">削除</button>
+                    `;
+                    evList.appendChild(rowDiv);
+                });
 
-            gcalEvents.forEach((gv, gIdx) => {
-                const rowDiv = document.createElement('div');
-                rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box;';
-                rowDiv.innerHTML = `
-                    <span style="font-size:0.75rem; color:#60a5fa; font-weight:bold; white-space:nowrap;">[Gカレ]</span>
-                    <input type="text" value="${gv}" style="flex:1; padding:6px; font-size:0.85rem; color:#60a5fa;" onchange="updateGCalEvent('${yyyyMmDd}', ${gIdx}, this.value)">
-                    <button onclick="deleteGCalEvent('${yyyyMmDd}', ${gIdx})" style="background:var(--danger); color:#fff; padding:6px 10px; font-size:0.75rem;">削除</button>
-                `;
-                evList.appendChild(rowDiv);
-            });
+                gcalEvents.forEach((gv, gIdx) => {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.style.cssText = 'display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box;';
+                    rowDiv.innerHTML = `
+                        <span style="font-size:0.75rem; color:#60a5fa; font-weight:bold; white-space:nowrap;">[Gカレ]</span>
+                        <input type="text" value="${gv}" style="flex:1; padding:6px; font-size:0.85rem; color:#60a5fa;" onchange="updateGCalEvent('${yyyyMmDd}', ${gIdx}, this.value)">
+                        <button onclick="deleteGCalEvent('${yyyyMmDd}', ${gIdx})" style="background:var(--danger); color:#fff; padding:6px 10px; font-size:0.75rem;">削除</button>
+                    `;
+                    evList.appendChild(rowDiv);
+                });
+            }
         }
 
         const memoKey = `memo_${selectedYear}_${selectedMonth}_${selectedDay}`;
@@ -1261,8 +1275,10 @@
         const yukunInput = document.getElementById('selected-day-memo-yukun');
         if (yukunInput && document.activeElement !== yukunInput) yukunInput.value = yukunMemo;
 
-        document.getElementById('remipan-file-name').textContent = '選択されていません';
-        document.getElementById('yukun-file-name').textContent = '選択されていません';
+        const remipanFileName = document.getElementById('remipan-file-name');
+        if (remipanFileName) remipanFileName.textContent = '選択されていません';
+        const yukunFileName = document.getElementById('yukun-file-name');
+        if (yukunFileName) yukunFileName.textContent = '選択されていません';
 
         renderDaySection('remipan', remipanMemo);
         renderDaySection('yukun', yukunMemo);
@@ -1369,7 +1385,8 @@
     window.handleDayImageUpload = async function(type, inputElement) {
         const files = inputElement.files;
         if (!files || files.length === 0) return;
-        document.getElementById(`${type}-file-name`).textContent = `選択中(${files.length}枚)`;
+        const nameDisplay = document.getElementById(`${type}-file-name`);
+        if (nameDisplay) nameDisplay.textContent = `選択中(${files.length}枚)`;
         const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
         const compressedPromises = Array.from(files).slice(0, 8).map(file => compressAndResizeImage(file));
         const newImages = await Promise.all(compressedPromises);
@@ -1423,6 +1440,7 @@
         const viewContainer = document.getElementById(`${type}-view-container`);
         const editContainer = document.getElementById(`${type}-edit-container`);
         const actionGroup = document.getElementById(`${type}-action-group`);
+        if (!viewContainer || !editContainer || !actionGroup) return;
 
         const imgKey = `img_${selectedYear}_${selectedMonth}_${selectedDay}`;
         const targetObj = (type === 'remipan') ? appData.day_images_remipan : appData.day_images_yukun;
@@ -1455,7 +1473,7 @@
             editContainer.style.display = 'block';
             viewContainer.style.display = 'none';
 
-            let actionHtml = `<button class="delete-btn-danger" onclick="clearDayData('${type}')" style="padding: 4px 10px; font-size: 0.7rem;">削除</button>`;
+            let actionHtml = `<button class="delete-btn-danger" onclick="clearDayData('${type}')" style="padding: 4px 10px; font-size: 0.7rem;">削除</button>";
             actionGroup.innerHTML = actionHtml;
 
             let imgHtml = '';
